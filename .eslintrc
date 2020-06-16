@@ -1,12 +1,5 @@
 {
   "parser": "babel-eslint",
-  "extends": [
-    "standard",
-    "standard-react",
-    "plugin:prettier/recommended",
-    "prettier/standard",
-    "prettier/react"
-  ],
   "env": {
     "node": true
   },
@@ -17,6 +10,7 @@
       "jsx": true
     }
   },
+  "plugins": ["react-hooks"],
   "settings": {
     "react": {
       "version": "16"
@@ -28,6 +22,8 @@
     "react/jsx-handler-names": 0,
     "react/jsx-fragments": 0,
     "react/no-unused-prop-types": 0,
-    "import/export": 0
+    "import/export": 0,
+    "react-hooks/exhaustive-deps": "warn",
+    "react-hooks/rules-of-hooks": "error"
   }
 }
