@@ -1,6 +1,6 @@
 # react-dymo-hooks
 
-> Collections of react hooks for handling Dymo LabelWriter
+> Collections of react hooks to handle the Dymo LabelWriter web service.
 
 [![NPM](https://img.shields.io/npm/v/react-dymo-hooks.svg)](https://www.npmjs.com/package/react-dymo-hooks) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
