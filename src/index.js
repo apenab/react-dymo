@@ -1,7 +1,10 @@
 import {useState, useEffect, useRef} from "react";
 import axios from "axios";
 
-import {useData, getDymoUrl, getDymoPrintersFromXml} from "./utils";
+import {useData, getDymoUrl as innerGetDymoUrl, getDymoPrintersFromXml as innerGetDymoPrintersFromXml} from "./utils";
+
+export const getDymoUrl = innerGetDymoUrl;
+export const getDymoPrintersFromXml = innerGetDymoPrintersFromXml;
 
 export function useDymoCheckService(port) {
   const [status, setStatus] = useState("initial");

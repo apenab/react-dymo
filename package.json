@@ -1,6 +1,6 @@
 {
   "name": "react-dymo-hooks",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Collections of react hooks to handle the Dymo LabelWriter web service.",
   "author": "apenab",
   "license": "MIT",
