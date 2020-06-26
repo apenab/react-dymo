@@ -1,6 +1,6 @@
 export const WS_PROTOCOL = "https://",
   WS_START_PORT = 41951,
-  WS_END_PORT = 41960,
+  WS_END_PORT = 41953,
   WS_CHECK_TIMEOUT = 3e3,
   WS_COMMAND_TIMEOUT = 1e4,
   WS_SVC_HOST = "127.0.0.1",

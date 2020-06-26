@@ -27,7 +27,7 @@ export function useDymoCheckService(port) {
         tokenSource.current = null;
         setStatus("success");
       })
-      .catch(() => {
+      .catch((error) => {
         if (!axios.isCancel(error)) {
           setStatus("error");
         }
