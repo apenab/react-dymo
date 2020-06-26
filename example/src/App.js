@@ -28,9 +28,9 @@ export default function App() {
   const xmlMemo = useMemo(() => generateXmlExample(name, address), [address, name]);
   return (
     <div>
-      {statusDymoService !== "success" ? (
-        <h1>Checking DYMO service...</h1>
-      ) : (
+      {statusDymoService === "loading" && <h1>Checking dymo web service...</h1>}
+      {statusDymoService === "error" && <h1>Error</h1>}
+      {statusDymoService === "success" && (
         <React.Fragment>
           <h3 style={{color: "green"}}>DYMO service is running in your PC.</h3>
           <input value={name} title="Name" onChange={(e) => setName(e.target.value)} />
