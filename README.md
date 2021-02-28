@@ -66,7 +66,15 @@ Object containing:
 - label.
 - error.
 
-#### Example
+## Run examples
+
+> Inside the root directory project
+
+1. Switch to the directory `example/`
+2. `yarn install` or `npm install`
+3. `yarn run start` or `npm run-script start`
+
+### Example
 
 ```jsx
 import {useDymoOpenLabel, useDymoCheckService} from "react-hooks-toolbox";
