@@ -1,6 +1,6 @@
 {
-  "short_name": "react-dymo-hooks",
-  "name": "react-dymo-hooks",
+  "short_name": "react-dymo",
+  "name": "react-dymo",
   "icons": [
     {
       "src": "favicon.ico",

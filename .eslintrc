@@ -1,5 +1,15 @@
 {
-  "parser": "babel-eslint",
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "standard",
+    "standard-react",
+    "plugin:prettier/recommended",
+    "prettier/standard",
+    "prettier/react",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended"
+  ],
   "env": {
     "node": true
   },
@@ -10,10 +20,9 @@
       "jsx": true
     }
   },
-  "plugins": ["react-hooks"],
   "settings": {
     "react": {
-      "version": "16"
+      "version": "17"
     }
   },
   "rules": {
@@ -23,7 +32,6 @@
     "react/jsx-fragments": 0,
     "react/no-unused-prop-types": 0,
     "import/export": 0,
-    "react-hooks/exhaustive-deps": "warn",
-    "react-hooks/rules-of-hooks": "error"
+    "no-unused-vars": 0
   }
 }

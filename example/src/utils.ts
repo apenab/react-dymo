@@ -1,4 +1,4 @@
-export function generateXmlExample(dymoName = "Prueba", dymoAddress = "Prueba") {
+export function generateXmlExample(dymoName = 'Test', dymoAddress = 'Test') {
   var labelXml = `<?xml version="1.0" encoding="utf-8"?>
 <DieCutLabel Version="8.0" Units="twips" MediaType="Default">
   <PaperOrientation>Landscape</PaperOrientation>
@@ -181,6 +181,6 @@ for the preview of the labe
     </TextObject>
     <Bounds X="1915.2" Y="576" Width="1872" Height="201.6"/>
   </ObjectInfo>
-</DieCutLabel>`;
-  return labelXml;
+</DieCutLabel>`
+  return labelXml
 }
