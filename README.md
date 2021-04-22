@@ -1,4 +1,4 @@
-# react-dymo-hooks
+# react-dymo
 
 > Collections of react hooks to handle the Dymo LabelWriter web service.
 
