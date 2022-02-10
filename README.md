@@ -1,6 +1,6 @@
 # react-dymo
 
-> Collections of react hooks to handle the Dymo LabelWriter web service.
+> Collections of javascript and react utilities to handle the Dymo LabelWriter web service.
 
 [![NPM](https://img.shields.io/npm/v/react-dymo-hooks.svg)](https://www.npmjs.com/package/react-dymo-hooks) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
@@ -74,10 +74,34 @@ Object containing:
 2. `yarn install` or `npm install`
 3. `yarn run start` or `npm run-script start`
 
-### Example
+## Examples
+
+### Print a Dymo Label
 
 ```jsx
-import {useDymoOpenLabel, useDymoCheckService} from "react-hooks-toolbox";
+import {dymoRequestBuilder} from "react-dymo-hooks";
+
+const params = {
+  data: `printerName=${encodeURIComponent(printerSelected)}&printParamsXml=&labelXml=${encodeURIComponent(
+    xml
+  )}&labelSetXml=`,
+};
+
+function handlePrintLabel() {
+  dymoRequestBuilder({
+    method: "POST",
+    wsAction: "printLabel",
+    axiosOtherParams: params,
+  })
+    .then(() => {})
+    .catch(() => {});
+}
+
+<button onClick={handlePrintLabel} />;
+```
+
+```jsx
+import {useDymoOpenLabel, useDymoCheckService} from "react-dymo-hooks";
 
 const DymoLabelPreview = () => {
   const statusDymoService = useDymoCheckService();
