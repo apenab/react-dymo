@@ -1,11 +1,12 @@
-import React, {useState, useMemo, memo} from "react";
-import {useDymoCheckService, useDymoFetchPrinters, useDymoOpenLabel} from "react-dymo-hooks";
+import React, { useState, useMemo, memo } from "react";
+import { useDymoCheckService, useDymoFetchPrinters, useDymoOpenLabel } from "react-dymo-hooks";
 
-import {generateXmlExample} from "./utils";
+import { generateXmlExample } from "./utils";
 
-const DymoLabelPreview = memo(({xml, statusDymoService, loadingComponent, errorComponent}) => {
-  const {label, statusOpenLabel} = useDymoOpenLabel(statusDymoService, xml);
-  const style = {background: "hsla(0, 0%, 50%, 0.66)", padding: 7};
+
+const DymoLabelPreview = memo(({ xml, statusDymoService, loadingComponent, errorComponent }) => {
+  const { label, statusOpenLabel } = useDymoOpenLabel(statusDymoService, xml);
+  const style = { background: "hsla(0, 0%, 50%, 0.66)", padding: 7 };
   if (statusOpenLabel === "loading") {
     return loadingComponent;
   } else if (statusOpenLabel === "error") {
@@ -22,21 +23,19 @@ const DymoLabelPreview = memo(({xml, statusDymoService, loadingComponent, errorC
 export default function App() {
   const statusDymoService = useDymoCheckService();
   const [name, setName] = useState("Antonio Peña Batista");
-  const [address, setAddress] = useState("Headquarters 1120 N Street Sacramento");
-  const {statusFetchPrinters, printers} = useDymoFetchPrinters(statusDymoService);
+  const { statusFetchPrinters, printers } = useDymoFetchPrinters(statusDymoService);
 
-  const xmlMemo = useMemo(() => generateXmlExample(name, address), [address, name]);
+  const xmlMemo = useMemo(() => generateXmlExample(name), [name]);
   return (
     <div>
       {statusDymoService === "loading" && <h1>Checking dymo web service...</h1>}
       {statusDymoService === "error" && <h1>Error</h1>}
       {statusDymoService === "success" && (
         <React.Fragment>
-          <h3 style={{color: "green"}}>DYMO service is running in your PC.</h3>
+          <h3 style={{ color: "green" }}>DYMO service is running in your PC.</h3>
           <input value={name} title="Name" onChange={(e) => setName(e.target.value)} />
           <br />
           <br />
-          <input value={address} title="Address" onChange={(e) => setAddress(e.target.value)} />
           <br />
           <br />
         </React.Fragment>
