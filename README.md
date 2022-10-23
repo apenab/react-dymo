@@ -18,6 +18,15 @@ yarn add react-dymo-hooks
 
 ## API
 
+### `printSingleLabel()`
+
+Print a single Dymo Label
+
+#### Arguments
+
+- printer {string}: The Dymo printer
+- xml {string}: The Dymo label in XML format parsed to string
+
 ### `useDymoCheckService()`
 
 Return the status of DYMO Label Web Service
@@ -79,25 +88,18 @@ Object containing:
 ### Print a Dymo Label
 
 ```jsx
-import {dymoRequestBuilder} from "react-dymo-hooks";
+import {printSingleLabel} from "react-dymo-hooks";
 
-const params = {
-  data: `printerName=${encodeURIComponent(printerSelected)}&printParamsXml=&labelXml=${encodeURIComponent(
-    xml
-  )}&labelSetXml=`,
-};
-
-function handlePrintLabel() {
-  dymoRequestBuilder({
-    method: "POST",
-    wsAction: "printLabel",
-    axiosOtherParams: params,
-  })
-    .then(() => {})
-    .catch(() => {});
+async function handlePrintSingleLabel(printer, xml) {
+  try {
+    const response = await printSingleLabel(printer, xml);
+    console.info(response);
+  } catch (error) {
+    console.error(error);
+  }
 }
 
-<button onClick={handlePrintLabel} />;
+<button onClick={() => handlePrintLabel(printer, xml)} />;
 ```
 
 ```jsx
