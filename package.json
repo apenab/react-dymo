@@ -4,7 +4,7 @@
   "description": "Collections of react hooks to handle the Dymo LabelWriter web service.",
   "author": "apenab",
   "license": "MIT",
-  "repository": "apenab/react-dymo-hooks",
+  "repository": "apenab/react-dymo",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
   "source": "src/index.js",
