@@ -10,7 +10,7 @@ import {
   WS_SVC_PATH,
   WS_ACTIONS,
 } from "./constants";
-import { localRetrieve, localStore } from "./storage";
+import {localRetrieve, localStore} from "./storage";
 
 async function storeDymoRequestParams() {
   let activeHost, activePort;
@@ -30,9 +30,9 @@ async function storeDymoRequestParams() {
           dymoUrlBuilder(WS_PROTOCOL, hostList[currentHostIndex], currentPort, WS_SVC_PATH, "status")
         );
         const [successRequestHost, successRequestPort] = response.config.url.split("/")[2].split(":");
-        localStore("dymo-ws-request-params", { activeHost: successRequestHost, activePort: successRequestPort });
+        localStore("dymo-ws-request-params", {activeHost: successRequestHost, activePort: successRequestPort});
         break loop1;
-      } catch (error) { }
+      } catch (error) {}
     }
   }
 }
@@ -48,7 +48,7 @@ export async function dymoRequestBuilder({
   if (!localRetrieve("dymo-ws-request-params")) {
     await storeDymoRequestParams();
   }
-  const { activeHost, activePort } = localRetrieve("dymo-ws-request-params");
+  const {activeHost, activePort} = localRetrieve("dymo-ws-request-params");
 
   const dymoAxiosInstance = axios.create();
   dymoAxiosInstance.interceptors.response.use(
@@ -56,7 +56,7 @@ export async function dymoRequestBuilder({
       return response;
     },
     async function (error) {
-      if (axios.isCancel(error)) {
+      if (axios.isCancel(error) || error?.response?.status === 500) {
         return Promise.reject(error);
       }
       await storeDymoRequestParams();
@@ -64,7 +64,7 @@ export async function dymoRequestBuilder({
         return Promise.reject(error);
       }
       try {
-        const { activeHost, activePort } = localRetrieve("dymo-ws-request-params");
+        const {activeHost, activePort} = localRetrieve("dymo-ws-request-params");
         const response = await axios.request({
           url: dymoUrlBuilder(wsProtocol, activeHost, activePort, wsPath, wsAction),
           method,
@@ -112,4 +112,24 @@ export function getDymoPrintersFromXml(xml, modelPrinter) {
     printers.push(printerDetails);
   });
   return printers;
+}
+
+/**
+ * Print dymo labels
+ *
+ * @param {string} printerName - The Dymo Printer to print on
+ * @param {string} labelXml - Label XML parsed to string
+ * @param {string} labelSetXml - LabelSet to print. LabelSet is used to print multiple labels with same layout but different data, e.g. multiple addresses.
+ * @returns AxiosResponse
+ */
+export function printLabel(printerName, labelXml, labelSetXml) {
+  return dymoRequestBuilder({
+    method: "POST",
+    wsAction: "printLabel",
+    axiosOtherParams: {
+      data: `printerName=${encodeURIComponent(printerName)}&printParamsXml=&labelXml=${encodeURIComponent(
+        labelXml
+      )}&labelSetXml=${labelSetXml || ""}`,
+    },
+  });
 }

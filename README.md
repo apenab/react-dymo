@@ -18,6 +18,16 @@ yarn add react-dymo-hooks
 
 ## API
 
+### `printLabel()`
+
+Print Dymo labels
+
+#### Arguments
+
+- {string} printerName - The Dymo Printer to print on
+- {string} labelXml - Label XML parsed to string
+- {string} labelSetXml - LabelSet to print. LabelSet is used to print multiple labels with same layout but different data, e.g. multiple addresses.
+
 ### `useDymoCheckService()`
 
 Return the status of DYMO Label Web Service
@@ -79,25 +89,18 @@ Object containing:
 ### Print a Dymo Label
 
 ```jsx
-import {dymoRequestBuilder} from "react-dymo-hooks";
+import {printLabel} from "react-dymo-hooks";
 
-const params = {
-  data: `printerName=${encodeURIComponent(printerSelected)}&printParamsXml=&labelXml=${encodeURIComponent(
-    xml
-  )}&labelSetXml=`,
-};
-
-function handlePrintLabel() {
-  dymoRequestBuilder({
-    method: "POST",
-    wsAction: "printLabel",
-    axiosOtherParams: params,
-  })
-    .then(() => {})
-    .catch(() => {});
+async function handlePrintSingleLabel(printerName, labelXml) {
+  try {
+    const response = await printLabel(printerName, labelXml);
+    console.info(response);
+  } catch (error) {
+    console.error(error);
+  }
 }
 
-<button onClick={handlePrintLabel} />;
+<button onClick={() => handlePrintLabel(printer, xml)} />;
 ```
 
 ```jsx
