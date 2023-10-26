@@ -17,7 +17,7 @@ async function storeDymoRequestParams() {
   if (localRetrieve("dymo-ws-request-params")) {
     activeHost = localRetrieve("dymo-ws-request-params").activeHost;
     activePort = localRetrieve("dymo-ws-request-params").activePort;
-    window.localStorage.removeItem("dymo-ws-request-params");
+    localStorage.removeItem("dymo-ws-request-params");
   }
   const hostList = [WS_SVC_HOST, WS_SVC_HOST_LEGACY];
   loop1: for (let currentHostIndex = 0; currentHostIndex < hostList.length; currentHostIndex++) {
