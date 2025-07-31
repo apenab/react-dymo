@@ -1,5 +1,5 @@
 import {useState, useEffect, useRef} from "react";
-import axios from "axios";
+import { isAbortError } from "./fetchUtils";
 
 import {useData} from "./hooks";
 import {
@@ -16,27 +16,27 @@ export const printLabel = innerPrintSingleLabel;
 
 export function useDymoCheckService(port) {
   const [status, setStatus] = useState("initial");
-  const tokenSource = useRef();
+  const abortControllerRef = useRef();
 
   useEffect(() => {
-    if (tokenSource.current) {
-      tokenSource.current.cancel();
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
     }
-    tokenSource.current = axios.CancelToken.source();
+    abortControllerRef.current = new AbortController();
     setStatus("loading");
-    dymoRequestBuilder({method: "GET", wsAction: "status", cancelToken: tokenSource.current.token})
+    dymoRequestBuilder({method: "GET", wsAction: "status", signal: abortControllerRef.current.signal})
       .then(() => {
-        tokenSource.current = null;
+        abortControllerRef.current = null;
         setStatus("success");
       })
       .catch((error) => {
-        if (!axios.isCancel(error)) {
+        if (!isAbortError(error)) {
           setStatus("error");
         }
       });
     return () => {
-      if (tokenSource.current) {
-        tokenSource.current.cancel();
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
     };
   }, [port]);
@@ -46,19 +46,19 @@ export function useDymoCheckService(port) {
 
 export function useDymoFetchPrinters(statusDymoService, modelPrinter = "LabelWriterPrinter", port) {
   const [data, setData] = useData({statusFetchPrinters: "initial", printers: [], error: null});
-  const tokenSource = useRef();
+  const abortControllerRef = useRef();
 
   useEffect(() => {
     if (statusDymoService === "success") {
-      if (tokenSource.current) {
-        tokenSource.current.cancel();
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
-      tokenSource.current = axios.CancelToken.source();
+      abortControllerRef.current = new AbortController();
       setData({statusFetchPrinters: "loading"});
 
-      dymoRequestBuilder({method: "GET", wsAction: "getPrinters", cancelToken: tokenSource.current.token})
+      dymoRequestBuilder({method: "GET", wsAction: "getPrinters", signal: abortControllerRef.current.signal})
         .then((response) => {
-          tokenSource.current = null;
+          abortControllerRef.current = null;
           setData({
             statusFetchPrinters: "success",
             printers: getDymoPrintersFromXml(response.data, modelPrinter),
@@ -66,14 +66,14 @@ export function useDymoFetchPrinters(statusDymoService, modelPrinter = "LabelWri
           });
         })
         .catch((error) => {
-          if (!axios.isCancel(error)) {
+          if (!isAbortError(error)) {
             setData({statusFetchPrinters: "error", printers: [], error: error});
           }
         });
     }
     return () => {
-      if (tokenSource.current) {
-        tokenSource.current.cancel();
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
     };
   }, [modelPrinter, port, setData, statusDymoService]);
@@ -83,35 +83,35 @@ export function useDymoFetchPrinters(statusDymoService, modelPrinter = "LabelWri
 
 export function useDymoOpenLabel(statusDymoService, labelXML, port) {
   const [data, setData] = useData({statusOpenLabel: "initial", label: null, error: null});
-  const tokenSource = useRef();
+  const abortControllerRef = useRef();
 
   useEffect(() => {
     if (statusDymoService === "success") {
-      if (tokenSource.current) {
-        tokenSource.current.cancel();
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
-      tokenSource.current = axios.CancelToken.source();
+      abortControllerRef.current = new AbortController();
       setData({statusOpenLabel: "loading"});
       dymoRequestBuilder({
         method: "POST",
         wsAction: "renderLabel",
-        cancelToken: tokenSource.current.token,
-        axiosOtherParams: {data: `labelXml=${encodeURIComponent(labelXML)}&renderParamsXml=&printerName=`},
+        signal: abortControllerRef.current.signal,
+        data: `labelXml=${encodeURIComponent(labelXML)}&renderParamsXml=&printerName=`,
         headers: {"Access-Control-Request-Private-Network": true, "Access-Control-Allow-Origin": "*"},
       })
         .then((response) => {
-          tokenSource.current = null;
+          abortControllerRef.current = null;
           setData({statusOpenLabel: "success", label: response.data, error: null});
         })
         .catch((error) => {
-          if (!axios.isCancel(error)) {
+          if (!isAbortError(error)) {
             setData({statusOpenLabel: "error", label: null, error: error});
           }
         });
     }
     return () => {
-      if (tokenSource.current) {
-        tokenSource.current.cancel();
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
     };
   }, [statusDymoService, labelXML, setData, port]);

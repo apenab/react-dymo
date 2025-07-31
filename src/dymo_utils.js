@@ -1,5 +1,5 @@
-import axios from "axios";
 import XMLParser from "react-xml-parser";
+import { createFetchInstance, isAbortError } from "./fetchUtils";
 
 import {
   WS_PROTOCOL,
@@ -26,10 +26,10 @@ async function storeDymoRequestParams() {
         continue loop2;
       }
       try {
-        const response = await axios.get(
-          dymoUrlBuilder(WS_PROTOCOL, hostList[currentHostIndex], currentPort, WS_SVC_PATH, "status")
-        );
-        const [successRequestHost, successRequestPort] = response.config.url.split("/")[2].split(":");
+        const url = dymoUrlBuilder(WS_PROTOCOL, hostList[currentHostIndex], currentPort, WS_SVC_PATH, "status");
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const [successRequestHost, successRequestPort] = url.split("/")[2].split(":");
         localStore("dymo-ws-request-params", {activeHost: successRequestHost, activePort: successRequestPort});
         break loop1;
       } catch (error) {}
@@ -42,48 +42,69 @@ export async function dymoRequestBuilder({
   wsPath = WS_SVC_PATH,
   wsAction,
   method,
-  cancelToken,
-  axiosOtherParams = {},
+  signal,
+  data,
+  headers = {},
 }) {
   if (!localRetrieve("dymo-ws-request-params")) {
     await storeDymoRequestParams();
   }
   const {activeHost, activePort} = localRetrieve("dymo-ws-request-params");
 
-  const dymoAxiosInstance = axios.create();
-  dymoAxiosInstance.interceptors.response.use(
-    function (response) {
-      return response;
-    },
-    async function (error) {
-      if (axios.isCancel(error) || error?.response?.status === 500) {
-        return Promise.reject(error);
+  const dymoFetchInstance = createFetchInstance();
+  
+  // Add response interceptor for retry logic
+  dymoFetchInstance.interceptors.response.push({
+    onFulfilled: (response) => response,
+    onRejected: async (error) => {
+      if (isAbortError(error) || (error.response && error.response.status === 500)) {
+        throw error;
       }
+      
       await storeDymoRequestParams();
       if (!localRetrieve("dymo-ws-request-params")) {
-        return Promise.reject(error);
+        throw error;
       }
+      
       try {
         const {activeHost, activePort} = localRetrieve("dymo-ws-request-params");
-        const response = await axios.request({
-          url: dymoUrlBuilder(wsProtocol, activeHost, activePort, wsPath, wsAction),
-          method,
-          cancelToken,
-          ...axiosOtherParams,
-        });
-        return Promise.resolve(response);
-      } catch (error) {
-        return Promise.reject(error);
+        const response = await fetch(
+          dymoUrlBuilder(wsProtocol, activeHost, activePort, wsPath, wsAction),
+          {
+            method,
+            signal,
+            body: data,
+            headers
+          }
+        );
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        return response;
+      } catch (retryError) {
+        throw retryError;
       }
     }
-  );
-  const request = await dymoAxiosInstance.request({
+  });
+  const response = await dymoFetchInstance.request({
     url: dymoUrlBuilder(wsProtocol, activeHost, activePort, wsPath, wsAction),
     method,
-    cancelToken,
-    ...axiosOtherParams,
+    signal,
+    data,
+    headers
   });
-  return request;
+  
+  // Parse response based on content type
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    response.data = await response.json();
+  } else {
+    response.data = await response.text();
+  }
+  
+  return response;
 }
 
 export function dymoUrlBuilder(wsProtocol, wsHost, wsPort, wsPath, wsAction) {
@@ -126,10 +147,8 @@ export function printLabel(printerName, labelXml, labelSetXml) {
   return dymoRequestBuilder({
     method: "POST",
     wsAction: "printLabel",
-    axiosOtherParams: {
-      data: `printerName=${encodeURIComponent(printerName)}&printParamsXml=&labelXml=${encodeURIComponent(
-        labelXml
-      )}&labelSetXml=${labelSetXml || ""}`,
-    },
+    data: `printerName=${encodeURIComponent(printerName)}&printParamsXml=&labelXml=${encodeURIComponent(
+      labelXml
+    )}&labelSetXml=${labelSetXml || ""}`,
   });
 }
