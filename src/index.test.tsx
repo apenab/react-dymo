@@ -1,4 +1,4 @@
-import { renderHook, act } from "@testing-library/react-hooks";
+import { renderHook, act, waitFor } from "@testing-library/react";
 import { useDymoCheckService, useDymoFetchPrinters, useDymoOpenLabel } from "./index";
 import * as dymoUtils from "./dymo_utils";
 import * as storage from "./storage";
@@ -37,25 +37,21 @@ describe("React Hooks", () => {
         url: "test",
       });
 
-      const { result, waitForNextUpdate } = renderHook(() => useDymoCheckService());
+      const { result } = renderHook(() => useDymoCheckService());
 
       expect(result.current).toBe("loading");
 
-      await waitForNextUpdate();
-
-      expect(result.current).toBe("success");
+      await waitFor(() => expect(result.current).toBe("success"));
     });
 
     it("should return 'error' on connection failure", async () => {
       vi.mocked(dymoUtils.dymoRequestBuilder).mockRejectedValue(new Error("Connection failed"));
 
-      const { result, waitForNextUpdate } = renderHook(() => useDymoCheckService());
+      const { result } = renderHook(() => useDymoCheckService());
 
       expect(result.current).toBe("loading");
 
-      await waitForNextUpdate();
-
-      expect(result.current).toBe("error");
+      await waitFor(() => expect(result.current).toBe("error"));
     });
 
     it("should handle cancellation without setting error state", async () => {
@@ -104,13 +100,11 @@ describe("React Hooks", () => {
         url: "test",
       });
 
-      const { result, waitForNextUpdate } = renderHook(() => useDymoFetchPrinters("success"));
+      const { result } = renderHook(() => useDymoFetchPrinters("success"));
 
       expect(result.current.statusFetchPrinters).toBe("loading");
 
-      await waitForNextUpdate();
-
-      expect(result.current.statusFetchPrinters).toBe("success");
+      await waitFor(() => expect(result.current.statusFetchPrinters).toBe("success"));
       expect(result.current.printers).toHaveLength(1);
       expect(result.current.printers[0]).toEqual({
         name: "Test Printer",
@@ -126,11 +120,9 @@ describe("React Hooks", () => {
         new Error("Failed to fetch printers")
       );
 
-      const { result, waitForNextUpdate } = renderHook(() => useDymoFetchPrinters("success"));
+      const { result } = renderHook(() => useDymoFetchPrinters("success"));
 
-      await waitForNextUpdate();
-
-      expect(result.current.statusFetchPrinters).toBe("error");
+      await waitFor(() => expect(result.current.statusFetchPrinters).toBe("error"));
       expect(result.current.printers).toEqual([]);
     });
 
@@ -154,11 +146,11 @@ describe("React Hooks", () => {
         url: "test",
       });
 
-      const { result, waitForNextUpdate } = renderHook(() =>
+      const { result } = renderHook(() =>
         useDymoFetchPrinters("success", "CustomPrinter")
       );
 
-      await waitForNextUpdate();
+      await waitFor(() => expect(result.current.printers).toHaveLength(1));
 
       expect(result.current.printers).toHaveLength(1);
       expect(result.current.printers[0].name).toBe("Custom Printer");
@@ -183,15 +175,13 @@ describe("React Hooks", () => {
         url: "test",
       });
 
-      const { result, waitForNextUpdate } = renderHook(() =>
+      const { result } = renderHook(() =>
         useDymoOpenLabel("success", "<Label><Text>Test</Text></Label>")
       );
 
       expect(result.current.statusOpenLabel).toBe("loading");
 
-      await waitForNextUpdate();
-
-      expect(result.current.statusOpenLabel).toBe("success");
+      await waitFor(() => expect(result.current.statusOpenLabel).toBe("success"));
       expect(result.current.label).toBe(base64Image);
     });
 
@@ -200,13 +190,11 @@ describe("React Hooks", () => {
         new Error("Failed to render label")
       );
 
-      const { result, waitForNextUpdate } = renderHook(() =>
+      const { result } = renderHook(() =>
         useDymoOpenLabel("success", "<Label></Label>")
       );
 
-      await waitForNextUpdate();
-
-      expect(result.current.statusOpenLabel).toBe("error");
+      await waitFor(() => expect(result.current.statusOpenLabel).toBe("error"));
       expect(result.current.label).toBeNull();
     });
 
@@ -220,18 +208,18 @@ describe("React Hooks", () => {
 
       const labelXML = "<Label><Text>Test & Special</Text></Label>";
 
-      const { waitForNextUpdate } = renderHook(() => useDymoOpenLabel("success", labelXML));
+      renderHook(() => useDymoOpenLabel("success", labelXML));
 
-      await waitForNextUpdate();
-
-      expect(dymoUtils.dymoRequestBuilder).toHaveBeenCalledWith(
-        expect.objectContaining({
-          method: "POST",
-          wsAction: "renderLabel",
-          fetchOptions: expect.objectContaining({
-            body: expect.stringContaining(encodeURIComponent(labelXML)),
-          }),
-        })
+      await waitFor(() =>
+        expect(dymoUtils.dymoRequestBuilder).toHaveBeenCalledWith(
+          expect.objectContaining({
+            method: "POST",
+            wsAction: "renderLabel",
+            fetchOptions: expect.objectContaining({
+              body: expect.stringContaining(encodeURIComponent(labelXML)),
+            }),
+          })
+        )
       );
     });
   });
