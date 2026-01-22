@@ -21,6 +21,7 @@
     "test:lint": "eslint .",
     "test:unit": "vitest run",
     "test:watch": "vitest",
+    "example": "cd example && npm start",
     "predeploy": "cd example && yarn install && yarn run build",
     "deploy": "gh-pages -d example/build",
     "changeset": "changeset",
