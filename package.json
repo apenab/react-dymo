@@ -65,7 +65,6 @@
     "dist"
   ],
   "dependencies": {
-    "axios": "^0.21.1",
     "react": "^16.0.0",
     "react-dom": "^16.13.1",
     "react-xml-parser": "^1.1.6"

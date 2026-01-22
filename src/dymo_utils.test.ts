@@ -1,11 +1,10 @@
 import { vi } from "vitest";
-import axios from "axios";
 import { dymoUrlBuilder, getDymoPrintersFromXml, printLabel, dymoRequestBuilder } from "./dymo_utils";
 import { WS_ACTIONS } from "./constants";
 import * as storage from "./storage";
 
-vi.mock("axios");
-const mockedAxios = axios as any;
+// Mock global fetch
+global.fetch = vi.fn();
 
 describe("dymo_utils", () => {
   beforeEach(() => {
@@ -135,14 +134,13 @@ describe("dymo_utils", () => {
 
   describe("printLabel", () => {
     it("should encode parameters correctly", async () => {
-      const mockResponse = { data: "success", config: { url: "https://127.0.0.1:41951/test" } };
-
-      mockedAxios.create.mockReturnValue({
-        request: vi.fn().mockResolvedValue(mockResponse),
-        interceptors: {
-          response: { use: vi.fn() },
-        },
-      } as any);
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        text: () => Promise.resolve("success"),
+      });
+      global.fetch = mockFetch;
 
       vi.spyOn(storage, "localRetrieve").mockReturnValue({
         activeHost: "127.0.0.1",
@@ -155,24 +153,23 @@ describe("dymo_utils", () => {
 
       await printLabel(printerName, labelXml, labelSetXml);
 
-      const axiosInstance = mockedAxios.create();
-      expect(axiosInstance.request).toHaveBeenCalled();
+      expect(mockFetch).toHaveBeenCalled();
+      const callArgs = mockFetch.mock.calls[0];
+      const body = callArgs[1].body;
 
-      const callArgs = (axiosInstance.request as any).mock.calls[0][0];
-      expect(callArgs.data).toContain(encodeURIComponent(printerName));
-      expect(callArgs.data).toContain(encodeURIComponent(labelXml));
-      expect(callArgs.data).toContain(labelSetXml);
+      expect(body).toContain(encodeURIComponent(printerName));
+      expect(body).toContain(encodeURIComponent(labelXml));
+      expect(body).toContain(labelSetXml);
     });
 
     it("should handle optional labelSetXml parameter", async () => {
-      const mockResponse = { data: "success", config: { url: "https://127.0.0.1:41951/test" } };
-
-      mockedAxios.create.mockReturnValue({
-        request: vi.fn().mockResolvedValue(mockResponse),
-        interceptors: {
-          response: { use: vi.fn() },
-        },
-      } as any);
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        text: () => Promise.resolve("success"),
+      });
+      global.fetch = mockFetch;
 
       vi.spyOn(storage, "localRetrieve").mockReturnValue({
         activeHost: "127.0.0.1",
@@ -181,22 +178,21 @@ describe("dymo_utils", () => {
 
       await printLabel("My Printer", "<Label>Test</Label>");
 
-      const axiosInstance = mockedAxios.create();
-      const callArgs = (axiosInstance.request as any).mock.calls[0][0];
-      expect(callArgs.data).toContain("labelSetXml=");
+      expect(mockFetch).toHaveBeenCalled();
+      const body = mockFetch.mock.calls[0][1].body;
+      expect(body).toContain("labelSetXml=");
     });
   });
 
   describe("dymoRequestBuilder", () => {
     it("should make request with stored connection params", async () => {
-      const mockResponse = { data: "success", config: { url: "https://127.0.0.1:41951/test" } };
-
-      mockedAxios.create.mockReturnValue({
-        request: vi.fn().mockResolvedValue(mockResponse),
-        interceptors: {
-          response: { use: vi.fn() },
-        },
-      } as any);
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        text: () => Promise.resolve("success"),
+      });
+      global.fetch = mockFetch;
 
       vi.spyOn(storage, "localRetrieve").mockReturnValue({
         activeHost: "127.0.0.1",
@@ -209,15 +205,10 @@ describe("dymo_utils", () => {
       });
 
       expect(response.data).toBe("success");
-      expect(mockedAxios.create).toHaveBeenCalled();
+      expect(mockFetch).toHaveBeenCalled();
     });
 
     it("should discover connection if params not stored", async () => {
-      const mockSuccessResponse = {
-        data: "connected",
-        config: { url: "https://127.0.0.1:41951/DYMO/DLS/Printing/StatusConnected" },
-      };
-
       let retrieveCallCount = 0;
       vi.spyOn(storage, "localRetrieve").mockImplementation(() => {
         retrieveCallCount++;
@@ -227,26 +218,28 @@ describe("dymo_utils", () => {
 
       vi.spyOn(storage, "localStore").mockImplementation(() => {});
 
-      mockedAxios.get.mockResolvedValue(mockSuccessResponse);
-      mockedAxios.create.mockReturnValue({
-        request: vi.fn().mockResolvedValue(mockSuccessResponse),
-        interceptors: {
-          response: { use: vi.fn() },
-        },
-      } as any);
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        text: () => Promise.resolve("connected"),
+      });
+      global.fetch = mockFetch;
 
       await dymoRequestBuilder({
         method: "GET",
         wsAction: "status",
       });
 
-      expect(mockedAxios.get).toHaveBeenCalled();
+      expect(mockFetch).toHaveBeenCalled();
       expect(storage.localStore).toHaveBeenCalled();
     });
 
     it("should throw error if unable to connect to service", async () => {
       vi.spyOn(storage, "localRetrieve").mockReturnValue(null);
-      mockedAxios.get.mockRejectedValue(new Error("Connection failed"));
+
+      const mockFetch = vi.fn().mockRejectedValue(new Error("Connection failed"));
+      global.fetch = mockFetch;
 
       await expect(
         dymoRequestBuilder({
