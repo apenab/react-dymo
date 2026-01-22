@@ -1,5 +1,5 @@
-export function generateXmlExample(dymoName = "Your name") {
-  var labelXml = `<?xml version="1.0" encoding="utf-8"?>
+export function generateXmlExample(dymoName = "Your name"): string {
+  const labelXml = `<?xml version="1.0" encoding="utf-8"?>
   <DieCutLabel Version="8.0" Units="twips">
     <PaperOrientation>Landscape</PaperOrientation>
     <Id>Small30336</Id>
