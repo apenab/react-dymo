@@ -1,14 +1,15 @@
+import { vi } from "vitest";
 import axios from "axios";
 import { dymoUrlBuilder, getDymoPrintersFromXml, printLabel, dymoRequestBuilder } from "./dymo_utils";
 import { WS_ACTIONS } from "./constants";
 import * as storage from "./storage";
 
-jest.mock("axios");
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+vi.mock("axios");
+const mockedAxios = axios as any;
 
 describe("dymo_utils", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     localStorage.clear();
   });
 
@@ -137,13 +138,13 @@ describe("dymo_utils", () => {
       const mockResponse = { data: "success", config: { url: "https://127.0.0.1:41951/test" } };
 
       mockedAxios.create.mockReturnValue({
-        request: jest.fn().mockResolvedValue(mockResponse),
+        request: vi.fn().mockResolvedValue(mockResponse),
         interceptors: {
-          response: { use: jest.fn() },
+          response: { use: vi.fn() },
         },
       } as any);
 
-      jest.spyOn(storage, "localRetrieve").mockReturnValue({
+      vi.spyOn(storage, "localRetrieve").mockReturnValue({
         activeHost: "127.0.0.1",
         activePort: "41951",
       });
@@ -157,7 +158,7 @@ describe("dymo_utils", () => {
       const axiosInstance = mockedAxios.create();
       expect(axiosInstance.request).toHaveBeenCalled();
 
-      const callArgs = (axiosInstance.request as jest.Mock).mock.calls[0][0];
+      const callArgs = (axiosInstance.request as any).mock.calls[0][0];
       expect(callArgs.data).toContain(encodeURIComponent(printerName));
       expect(callArgs.data).toContain(encodeURIComponent(labelXml));
       expect(callArgs.data).toContain(labelSetXml);
@@ -167,13 +168,13 @@ describe("dymo_utils", () => {
       const mockResponse = { data: "success", config: { url: "https://127.0.0.1:41951/test" } };
 
       mockedAxios.create.mockReturnValue({
-        request: jest.fn().mockResolvedValue(mockResponse),
+        request: vi.fn().mockResolvedValue(mockResponse),
         interceptors: {
-          response: { use: jest.fn() },
+          response: { use: vi.fn() },
         },
       } as any);
 
-      jest.spyOn(storage, "localRetrieve").mockReturnValue({
+      vi.spyOn(storage, "localRetrieve").mockReturnValue({
         activeHost: "127.0.0.1",
         activePort: "41951",
       });
@@ -181,7 +182,7 @@ describe("dymo_utils", () => {
       await printLabel("My Printer", "<Label>Test</Label>");
 
       const axiosInstance = mockedAxios.create();
-      const callArgs = (axiosInstance.request as jest.Mock).mock.calls[0][0];
+      const callArgs = (axiosInstance.request as any).mock.calls[0][0];
       expect(callArgs.data).toContain("labelSetXml=");
     });
   });
@@ -191,13 +192,13 @@ describe("dymo_utils", () => {
       const mockResponse = { data: "success", config: { url: "https://127.0.0.1:41951/test" } };
 
       mockedAxios.create.mockReturnValue({
-        request: jest.fn().mockResolvedValue(mockResponse),
+        request: vi.fn().mockResolvedValue(mockResponse),
         interceptors: {
-          response: { use: jest.fn() },
+          response: { use: vi.fn() },
         },
       } as any);
 
-      jest.spyOn(storage, "localRetrieve").mockReturnValue({
+      vi.spyOn(storage, "localRetrieve").mockReturnValue({
         activeHost: "127.0.0.1",
         activePort: "41951",
       });
@@ -218,19 +219,19 @@ describe("dymo_utils", () => {
       };
 
       let retrieveCallCount = 0;
-      jest.spyOn(storage, "localRetrieve").mockImplementation(() => {
+      vi.spyOn(storage, "localRetrieve").mockImplementation(() => {
         retrieveCallCount++;
         if (retrieveCallCount === 1) return null;
         return { activeHost: "127.0.0.1", activePort: "41951" };
       });
 
-      jest.spyOn(storage, "localStore").mockImplementation(() => {});
+      vi.spyOn(storage, "localStore").mockImplementation(() => {});
 
       mockedAxios.get.mockResolvedValue(mockSuccessResponse);
       mockedAxios.create.mockReturnValue({
-        request: jest.fn().mockResolvedValue(mockSuccessResponse),
+        request: vi.fn().mockResolvedValue(mockSuccessResponse),
         interceptors: {
-          response: { use: jest.fn() },
+          response: { use: vi.fn() },
         },
       } as any);
 
@@ -244,7 +245,7 @@ describe("dymo_utils", () => {
     });
 
     it("should throw error if unable to connect to service", async () => {
-      jest.spyOn(storage, "localRetrieve").mockReturnValue(null);
+      vi.spyOn(storage, "localRetrieve").mockReturnValue(null);
       mockedAxios.get.mockRejectedValue(new Error("Connection failed"));
 
       await expect(
