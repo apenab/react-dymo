@@ -4,7 +4,7 @@
 
 [![NPM](https://img.shields.io/npm/v/react-dymo-hooks.svg)](https://www.npmjs.com/package/react-dymo-hooks) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
-## v3.0.0 - Major Rewrite
+## v4.0.0 - Major Rewrite
 
 This major release brings full TypeScript support, modern build tooling, and zero external HTTP dependencies.
 
@@ -34,7 +34,7 @@ This major release brings full TypeScript support, modern build tooling, and zer
 // Before (v2.x)
 if (printer.isLocal === "True") { ... }
 
-// After (v3.x)
+// After (v4.x)
 if (printer.isLocal === true) { ... }
 // or simply: if (printer.isLocal) { ... }
 ```
@@ -48,7 +48,7 @@ const source = axios.CancelToken.source();
 dymoRequestBuilder({ cancelToken: source.token, ... });
 if (axios.isCancel(error)) { ... }
 
-// After (v3.x with fetch)
+// After (v4.x with fetch)
 import { isRequestCancelled } from "react-dymo-hooks";
 const controller = new AbortController();
 dymoRequestBuilder({ signal: controller.signal, ... });

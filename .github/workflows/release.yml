@@ -44,6 +44,10 @@ jobs:
         if: steps.changesets.outputs.published == 'true'
         run: |
           VERSION=$(node -p "require('./package.json').version")
+          if gh release view "v${VERSION}" >/dev/null 2>&1; then
+            echo "Release v${VERSION} already exists. Skipping."
+            exit 0
+          fi
           gh release create "v${VERSION}" \
             --title "v${VERSION}" \
             --notes "See [CHANGELOG.md](CHANGELOG.md) for details." \
