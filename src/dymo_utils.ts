@@ -1,4 +1,3 @@
-import axios, { AxiosRequestConfig, AxiosResponse, CancelToken } from "axios";
 import XMLParser from "react-xml-parser";
 
 import {
@@ -33,6 +32,16 @@ export interface DymoRequestParams {
 }
 
 /**
+ * Response from DYMO web service requests
+ */
+export interface DymoResponse<T = any> {
+  data: T;
+  status: number;
+  statusText: string;
+  url: string;
+}
+
+/**
  * Configuration options for building DYMO requests
  */
 export interface DymoRequestConfig {
@@ -40,8 +49,8 @@ export interface DymoRequestConfig {
   wsPath?: string;
   wsAction: WsAction;
   method: "GET" | "POST";
-  cancelToken?: CancelToken;
-  axiosOtherParams?: Partial<AxiosRequestConfig>;
+  signal?: AbortSignal;
+  fetchOptions?: RequestInit;
 }
 
 /**
@@ -75,16 +84,17 @@ async function storeDymoRequestParams(): Promise<void> {
       }
 
       try {
-        const response = await axios.get<string>(
-          dymoUrlBuilder(WS_PROTOCOL, hostList[currentHostIndex], currentPort, WS_SVC_PATH, "status")
-        );
+        const url = dymoUrlBuilder(WS_PROTOCOL, hostList[currentHostIndex], currentPort, WS_SVC_PATH, "status");
+        const response = await fetch(url);
 
-        const [successRequestHost, successRequestPort] = response.config.url!.split("/")[2].split(":");
-        localStore("dymo-ws-request-params", {
-          activeHost: successRequestHost,
-          activePort: successRequestPort,
-        });
-        break loop1;
+        if (response.ok) {
+          const urlObj = new URL(url);
+          localStore("dymo-ws-request-params", {
+            activeHost: urlObj.hostname,
+            activePort: urlObj.port,
+          });
+          break loop1;
+        }
       } catch (error) {
         // Continue trying other hosts/ports
       }
@@ -93,21 +103,40 @@ async function storeDymoRequestParams(): Promise<void> {
 }
 
 /**
- * Builds and executes axios requests to the DYMO web service
+ * Custom error class for AbortErrors that mimics axios.isCancel behavior
+ */
+export class RequestCancelledError extends Error {
+  constructor(message = "Request cancelled") {
+    super(message);
+    this.name = "RequestCancelledError";
+  }
+}
+
+/**
+ * Check if an error is a cancellation error
+ * @param error - Error to check
+ * @returns true if error is a cancellation
+ */
+export function isRequestCancelled(error: any): boolean {
+  return error instanceof RequestCancelledError || error?.name === "AbortError";
+}
+
+/**
+ * Builds and executes fetch requests to the DYMO web service
  * Automatically discovers the service location and retries on failure
  * @param config - Request configuration
- * @returns Axios response
+ * @returns Response with data
  */
 export async function dymoRequestBuilder(
   config: DymoRequestConfig
-): Promise<AxiosResponse<any>> {
+): Promise<DymoResponse<any>> {
   const {
     wsProtocol = WS_PROTOCOL,
     wsPath = WS_SVC_PATH,
     wsAction,
     method,
-    cancelToken,
-    axiosOtherParams = {},
+    signal,
+    fetchOptions = {},
   } = config;
 
   if (!localRetrieve<DymoRequestParams>("dymo-ws-request-params")) {
@@ -121,46 +150,54 @@ export async function dymoRequestBuilder(
 
   const { activeHost, activePort } = params;
 
-  const dymoAxiosInstance = axios.create();
-  dymoAxiosInstance.interceptors.response.use(
-    function (response) {
-      return response;
-    },
-    async function (error) {
-      if (axios.isCancel(error) || error?.response?.status === 500) {
-        return Promise.reject(error);
+  const makeRequest = async (host: string, port: string): Promise<DymoResponse<any>> => {
+    const url = dymoUrlBuilder(wsProtocol, host, Number(port), wsPath, wsAction);
+
+    try {
+      const response = await fetch(url, {
+        method,
+        signal,
+        ...fetchOptions,
+      });
+
+      if (!response.ok && response.status !== 500) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      await storeDymoRequestParams();
+      const text = await response.text();
 
-      const retryParams = localRetrieve<DymoRequestParams>("dymo-ws-request-params");
-      if (!retryParams) {
-        return Promise.reject(error);
+      return {
+        data: text,
+        status: response.status,
+        statusText: response.statusText,
+        url,
+      };
+    } catch (error: any) {
+      if (error.name === "AbortError") {
+        throw new RequestCancelledError();
       }
-
-      try {
-        const { activeHost, activePort } = retryParams;
-        const response = await axios.request({
-          url: dymoUrlBuilder(wsProtocol, activeHost, Number(activePort), wsPath, wsAction),
-          method,
-          cancelToken,
-          ...axiosOtherParams,
-        });
-        return Promise.resolve(response);
-      } catch (error) {
-        return Promise.reject(error);
-      }
+      throw error;
     }
-  );
+  };
 
-  const request = await dymoAxiosInstance.request({
-    url: dymoUrlBuilder(wsProtocol, activeHost, Number(activePort), wsPath, wsAction),
-    method,
-    cancelToken,
-    ...axiosOtherParams,
-  });
+  try {
+    return await makeRequest(activeHost, activePort);
+  } catch (error: any) {
+    // If cancelled or 500 error, don't retry
+    if (isRequestCancelled(error) || error?.message?.includes("500")) {
+      throw error;
+    }
 
-  return request;
+    // Retry with new connection discovery
+    await storeDymoRequestParams();
+
+    const retryParams = localRetrieve<DymoRequestParams>("dymo-ws-request-params");
+    if (!retryParams) {
+      throw error;
+    }
+
+    return await makeRequest(retryParams.activeHost, retryParams.activePort);
+  }
 }
 
 /**
@@ -215,20 +252,25 @@ export function getDymoPrintersFromXml(xml: string, modelPrinter: string): DymoP
  * @param printerName - The DYMO Printer to print on
  * @param labelXml - Label XML parsed to string
  * @param labelSetXml - LabelSet to print. LabelSet is used to print multiple labels with same layout but different data
- * @returns Axios response
+ * @returns Response from DYMO service
  */
 export function printLabel(
   printerName: string,
   labelXml: string,
   labelSetXml?: string
-): Promise<AxiosResponse<any>> {
+): Promise<DymoResponse<any>> {
+  const body = `printerName=${encodeURIComponent(printerName)}&printParamsXml=&labelXml=${encodeURIComponent(
+    labelXml
+  )}&labelSetXml=${labelSetXml || ""}`;
+
   return dymoRequestBuilder({
     method: "POST",
     wsAction: "printLabel",
-    axiosOtherParams: {
-      data: `printerName=${encodeURIComponent(printerName)}&printParamsXml=&labelXml=${encodeURIComponent(
-        labelXml
-      )}&labelSetXml=${labelSetXml || ""}`,
+    fetchOptions: {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body,
     },
   });
 }

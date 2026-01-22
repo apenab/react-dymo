@@ -47,7 +47,7 @@ This will publish to npm. Make sure you have:
 1. ✅ Implement changesets (completed)
 2. ✅ Migrate to Vite and Vitest (completed)
 3. ✅ Migrate to TypeScript (completed)
-4. ⏳ Remove usage of axios library (#47)
+4. ✅ Remove usage of axios library (#47) (completed)
 5. ⏳ Separate core DymoJS into isolated package (#46)
 
 ## GitHub Actions (Optional)
