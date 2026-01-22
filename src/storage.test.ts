@@ -1,9 +1,10 @@
+import { vi } from "vitest";
 import { localStore, localRetrieve } from "./storage";
 
 describe("storage", () => {
   beforeEach(() => {
     localStorage.clear();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("localStore", () => {
@@ -149,7 +150,7 @@ describe("storage", () => {
     });
 
     it("should handle complete expiration flow", () => {
-      jest.useFakeTimers();
+      vi.useFakeTimers();
 
       const testData = { value: "test" };
       const timeout = 5; // 5 seconds
@@ -161,12 +162,12 @@ describe("storage", () => {
       expect(result).toEqual(testData);
 
       // After expiration
-      jest.advanceTimersByTime(6000); // Advance 6 seconds
+      vi.advanceTimersByTime(6000); // Advance 6 seconds
 
       result = localRetrieve("test-key", { expired: true });
       expect(result).toEqual({ expired: true });
 
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
   });
 });

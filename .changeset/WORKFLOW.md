@@ -44,8 +44,8 @@ This will publish to npm. Make sure you have:
 
 ## Roadmap for v3.0.0
 
-1. ✅ Implement changesets (current)
-2. ⏳ Migrate to Vite and Vitest
+1. ✅ Implement changesets (completed)
+2. ✅ Migrate to Vite and Vitest (completed)
 3. ✅ Migrate to TypeScript (completed)
 4. ⏳ Remove usage of axios library (#47)
 5. ⏳ Separate core DymoJS into isolated package (#46)

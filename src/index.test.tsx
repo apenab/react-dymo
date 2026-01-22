@@ -1,26 +1,27 @@
-import { renderHook, act } from "@testing-library/react-hooks";
+import { renderHook } from "@testing-library/react-hooks";
 import axios from "axios";
 import { useDymoCheckService, useDymoFetchPrinters, useDymoOpenLabel } from "./index";
 import * as dymoUtils from "./dymo_utils";
 import * as storage from "./storage";
+import { vi } from "vitest";
 
-jest.mock("axios");
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+vi.mock("axios");
+const mockedAxios = axios as any;
 
 describe("React Hooks", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     localStorage.clear();
     // Mock storage to avoid connection discovery during tests
-    jest.spyOn(storage, "localRetrieve").mockReturnValue({
+    vi.spyOn(storage, "localRetrieve").mockReturnValue({
       activeHost: "127.0.0.1",
       activePort: "41951",
     });
-    jest.spyOn(storage, "localStore").mockImplementation(() => {});
+    vi.spyOn(storage, "localStore").mockImplementation(() => {});
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe("useDymoCheckService", () => {
@@ -28,14 +29,14 @@ describe("React Hooks", () => {
       const mockCancelToken = { token: "mock-token" };
       const mockCancelSource = {
         token: mockCancelToken.token,
-        cancel: jest.fn(),
+        cancel: vi.fn(),
       };
 
       mockedAxios.CancelToken = {
-        source: jest.fn().mockReturnValue(mockCancelSource),
+        source: vi.fn().mockReturnValue(mockCancelSource),
       } as any;
 
-      const mockRequestBuilder = jest
+      const mockRequestBuilder = vi
         .spyOn(dymoUtils, "dymoRequestBuilder")
         .mockResolvedValue({ data: "connected" } as any);
 
@@ -58,16 +59,16 @@ describe("React Hooks", () => {
       const mockCancelToken = { token: "mock-token" };
       const mockCancelSource = {
         token: mockCancelToken.token,
-        cancel: jest.fn(),
+        cancel: vi.fn(),
       };
 
       mockedAxios.CancelToken = {
-        source: jest.fn().mockReturnValue(mockCancelSource),
+        source: vi.fn().mockReturnValue(mockCancelSource),
       } as any;
 
-      mockedAxios.isCancel = jest.fn().mockReturnValue(false);
+      mockedAxios.isCancel = vi.fn().mockReturnValue(false);
 
-      const mockRequestBuilder = jest
+      const mockRequestBuilder = vi
         .spyOn(dymoUtils, "dymoRequestBuilder")
         .mockRejectedValue(new Error("Connection failed"));
 
@@ -83,14 +84,14 @@ describe("React Hooks", () => {
     it("should cancel previous request when port changes", async () => {
       const mockCancelSource = {
         token: "mock-token",
-        cancel: jest.fn(),
+        cancel: vi.fn(),
       };
 
       mockedAxios.CancelToken = {
-        source: jest.fn().mockReturnValue(mockCancelSource),
+        source: vi.fn().mockReturnValue(mockCancelSource),
       } as any;
 
-      jest.spyOn(dymoUtils, "dymoRequestBuilder").mockResolvedValue({ data: "connected" } as any);
+      vi.spyOn(dymoUtils, "dymoRequestBuilder").mockResolvedValue({ data: "connected" } as any);
 
       const { rerender } = renderHook(({ port }) => useDymoCheckService(port), {
         initialProps: { port: 41951 },
@@ -104,16 +105,16 @@ describe("React Hooks", () => {
     it("should handle cancellation without setting error state", async () => {
       const mockCancelSource = {
         token: "mock-token",
-        cancel: jest.fn(),
+        cancel: vi.fn(),
       };
 
       mockedAxios.CancelToken = {
-        source: jest.fn().mockReturnValue(mockCancelSource),
+        source: vi.fn().mockReturnValue(mockCancelSource),
       } as any;
 
-      mockedAxios.isCancel = jest.fn().mockReturnValue(true);
+      mockedAxios.isCancel = vi.fn().mockReturnValue(true);
 
-      jest
+      vi
         .spyOn(dymoUtils, "dymoRequestBuilder")
         .mockRejectedValue({ message: "Request cancelled" });
 
@@ -125,7 +126,7 @@ describe("React Hooks", () => {
 
   describe("useDymoFetchPrinters", () => {
     it("should only fetch when statusDymoService is 'success'", () => {
-      const mockRequestBuilder = jest.spyOn(dymoUtils, "dymoRequestBuilder");
+      const mockRequestBuilder = vi.spyOn(dymoUtils, "dymoRequestBuilder");
 
       const { result } = renderHook(() => useDymoFetchPrinters("initial"));
 
@@ -136,11 +137,11 @@ describe("React Hooks", () => {
     it.skip("should fetch printers successfully", async () => {
       const mockCancelSource = {
         token: "mock-token",
-        cancel: jest.fn(),
+        cancel: vi.fn(),
       };
 
       mockedAxios.CancelToken = {
-        source: jest.fn().mockReturnValue(mockCancelSource),
+        source: vi.fn().mockReturnValue(mockCancelSource),
       } as any;
 
       const xmlResponse = `
@@ -156,13 +157,13 @@ describe("React Hooks", () => {
       `;
 
       // Clear and re-mock for this specific test
-      jest.clearAllMocks();
-      jest.spyOn(storage, "localRetrieve").mockReturnValue({
+      vi.clearAllMocks();
+      vi.spyOn(storage, "localRetrieve").mockReturnValue({
         activeHost: "127.0.0.1",
         activePort: "41951",
       });
-      jest.spyOn(storage, "localStore").mockImplementation(() => {});
-      jest
+      vi.spyOn(storage, "localStore").mockImplementation(() => {});
+      vi
         .spyOn(dymoUtils, "dymoRequestBuilder")
         .mockResolvedValue({ data: xmlResponse } as any);
 
@@ -189,17 +190,17 @@ describe("React Hooks", () => {
     it("should handle fetch error", async () => {
       const mockCancelSource = {
         token: "mock-token",
-        cancel: jest.fn(),
+        cancel: vi.fn(),
       };
 
       mockedAxios.CancelToken = {
-        source: jest.fn().mockReturnValue(mockCancelSource),
+        source: vi.fn().mockReturnValue(mockCancelSource),
       } as any;
 
-      mockedAxios.isCancel = jest.fn().mockReturnValue(false);
+      mockedAxios.isCancel = vi.fn().mockReturnValue(false);
 
       const error = new Error("Failed to fetch printers");
-      jest.spyOn(dymoUtils, "dymoRequestBuilder").mockRejectedValue(error);
+      vi.spyOn(dymoUtils, "dymoRequestBuilder").mockRejectedValue(error);
 
       const { result, waitForNextUpdate } = renderHook(() =>
         useDymoFetchPrinters("success")
@@ -215,11 +216,11 @@ describe("React Hooks", () => {
     it.skip("should filter printers by modelPrinter parameter", async () => {
       const mockCancelSource = {
         token: "mock-token",
-        cancel: jest.fn(),
+        cancel: vi.fn(),
       };
 
       mockedAxios.CancelToken = {
-        source: jest.fn().mockReturnValue(mockCancelSource),
+        source: vi.fn().mockReturnValue(mockCancelSource),
       } as any;
 
       const xmlResponse = `
@@ -235,13 +236,13 @@ describe("React Hooks", () => {
       `;
 
       // Clear and re-mock for this specific test
-      jest.clearAllMocks();
-      jest.spyOn(storage, "localRetrieve").mockReturnValue({
+      vi.clearAllMocks();
+      vi.spyOn(storage, "localRetrieve").mockReturnValue({
         activeHost: "127.0.0.1",
         activePort: "41951",
       });
-      jest.spyOn(storage, "localStore").mockImplementation(() => {});
-      jest
+      vi.spyOn(storage, "localStore").mockImplementation(() => {});
+      vi
         .spyOn(dymoUtils, "dymoRequestBuilder")
         .mockResolvedValue({ data: xmlResponse } as any);
 
@@ -258,7 +259,7 @@ describe("React Hooks", () => {
 
   describe("useDymoOpenLabel", () => {
     it("should only render when statusDymoService is 'success'", () => {
-      const mockRequestBuilder = jest.spyOn(dymoUtils, "dymoRequestBuilder");
+      const mockRequestBuilder = vi.spyOn(dymoUtils, "dymoRequestBuilder");
 
       const { result } = renderHook(() => useDymoOpenLabel("initial", "<Label></Label>"));
 
@@ -269,23 +270,23 @@ describe("React Hooks", () => {
     it.skip("should render label successfully", async () => {
       const mockCancelSource = {
         token: "mock-token",
-        cancel: jest.fn(),
+        cancel: vi.fn(),
       };
 
       mockedAxios.CancelToken = {
-        source: jest.fn().mockReturnValue(mockCancelSource),
+        source: vi.fn().mockReturnValue(mockCancelSource),
       } as any;
 
       const base64Image = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
 
       // Clear and re-mock for this specific test
-      jest.clearAllMocks();
-      jest.spyOn(storage, "localRetrieve").mockReturnValue({
+      vi.clearAllMocks();
+      vi.spyOn(storage, "localRetrieve").mockReturnValue({
         activeHost: "127.0.0.1",
         activePort: "41951",
       });
-      jest.spyOn(storage, "localStore").mockImplementation(() => {});
-      jest
+      vi.spyOn(storage, "localStore").mockImplementation(() => {});
+      vi
         .spyOn(dymoUtils, "dymoRequestBuilder")
         .mockResolvedValue({ data: base64Image } as any);
 
@@ -307,17 +308,17 @@ describe("React Hooks", () => {
     it("should handle render error", async () => {
       const mockCancelSource = {
         token: "mock-token",
-        cancel: jest.fn(),
+        cancel: vi.fn(),
       };
 
       mockedAxios.CancelToken = {
-        source: jest.fn().mockReturnValue(mockCancelSource),
+        source: vi.fn().mockReturnValue(mockCancelSource),
       } as any;
 
-      mockedAxios.isCancel = jest.fn().mockReturnValue(false);
+      mockedAxios.isCancel = vi.fn().mockReturnValue(false);
 
       const error = new Error("Failed to render label");
-      jest.spyOn(dymoUtils, "dymoRequestBuilder").mockRejectedValue(error);
+      vi.spyOn(dymoUtils, "dymoRequestBuilder").mockRejectedValue(error);
 
       const { result, waitForNextUpdate } = renderHook(() =>
         useDymoOpenLabel("success", "<Label></Label>")
@@ -333,22 +334,22 @@ describe("React Hooks", () => {
     it.skip("should URL encode label XML in request", async () => {
       const mockCancelSource = {
         token: "mock-token",
-        cancel: jest.fn(),
+        cancel: vi.fn(),
       };
 
       mockedAxios.CancelToken = {
-        source: jest.fn().mockReturnValue(mockCancelSource),
+        source: vi.fn().mockReturnValue(mockCancelSource),
       } as any;
 
       // Clear and re-mock for this specific test
-      jest.clearAllMocks();
-      jest.spyOn(storage, "localRetrieve").mockReturnValue({
+      vi.clearAllMocks();
+      vi.spyOn(storage, "localRetrieve").mockReturnValue({
         activeHost: "127.0.0.1",
         activePort: "41951",
       });
-      jest.spyOn(storage, "localStore").mockImplementation(() => {});
+      vi.spyOn(storage, "localStore").mockImplementation(() => {});
 
-      const mockRequestBuilder = jest
+      const mockRequestBuilder = vi
         .spyOn(dymoUtils, "dymoRequestBuilder")
         .mockResolvedValue({ data: "base64data" } as any);
 
@@ -374,14 +375,14 @@ describe("React Hooks", () => {
     it("should re-render when labelXML changes", async () => {
       const mockCancelSource = {
         token: "mock-token",
-        cancel: jest.fn(),
+        cancel: vi.fn(),
       };
 
       mockedAxios.CancelToken = {
-        source: jest.fn().mockReturnValue(mockCancelSource),
+        source: vi.fn().mockReturnValue(mockCancelSource),
       } as any;
 
-      jest
+      vi
         .spyOn(dymoUtils, "dymoRequestBuilder")
         .mockResolvedValue({ data: "base64data" } as any);
 

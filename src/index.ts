@@ -17,7 +17,7 @@ export const getDymoPrintersFromXml = innerGetDymoPrintersFromXml;
 export const printLabel = innerPrintSingleLabel;
 
 // Re-export types
-export { DymoPrinter, DymoRequestParams, DymoRequestConfig } from "./dymo_utils";
+export type { DymoPrinter, DymoRequestParams, DymoRequestConfig } from "./dymo_utils";
 
 /**
  * Status of an asynchronous operation
