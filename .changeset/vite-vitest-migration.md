@@ -1,5 +1,5 @@
 ---
-"react-dymo-hooks": major
+"react-dymo-hooks": patch
 ---
 
 # Vite and Vitest Migration
@@ -43,7 +43,6 @@ Migrated build tooling from microbundle-crl to Vite and testing from Jest to Vit
 
 ### Removed Dependencies
 - `microbundle-crl` (replaced by Vite)
-- `react-scripts` (replaced by Vitest)
 - `@types/jest` (replaced by Vitest types)
 - `cross-env` (not needed with Vitest)
 

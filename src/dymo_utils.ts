@@ -259,9 +259,10 @@ export function printLabel(
   labelXml: string,
   labelSetXml?: string
 ): Promise<DymoResponse<any>> {
+ const encodedLabelSetXml = labelSetXml ? encodeURIComponent(labelSetXml) : "";
   const body = `printerName=${encodeURIComponent(printerName)}&printParamsXml=&labelXml=${encodeURIComponent(
     labelXml
-  )}&labelSetXml=${labelSetXml || ""}`;
+  )}&labelSetXml=${encodedLabelSetXml}`;
 
   return dymoRequestBuilder({
     method: "POST",
