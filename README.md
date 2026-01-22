@@ -128,7 +128,7 @@ Render a label preview.
 Object containing:
 
 - `statusOpenLabel` - `"initial" | "loading" | "success" | "error"`
-- `label` - Base64 encoded PNG image
+- `label` - Base64 encoded PNG
 - `error` - Error object if request failed
 
 ### `isRequestCancelled()`
@@ -156,7 +156,7 @@ Or manually:
 ```bash
 cd example
 npm install
-npm run dev
+npm start
 ```
 
 The example app uses Vite + React 18 + TypeScript.
@@ -194,12 +194,11 @@ import {
 
 // All hooks and utilities are fully typed
 const statusDymoService: ServiceStatus = useDymoCheckService();
-const { printers, statusFetchPrinters, error }: FetchPrintersResult =
-  useDymoFetchPrinters(statusDymoService);
+const {printers, statusFetchPrinters, error}: FetchPrintersResult = useDymoFetchPrinters(statusDymoService);
 
 // DymoPrinter interface with proper boolean types
 printers.forEach((printer: DymoPrinter) => {
-  console.log(`${printer.name}: ${printer.isConnected ? 'Online' : 'Offline'}`);
+  console.log(`${printer.name}: ${printer.isConnected ? "Online" : "Offline"}`);
 });
 ```
 
@@ -208,7 +207,7 @@ printers.forEach((printer: DymoPrinter) => {
 ### Print a Dymo Label
 
 ```tsx
-import { printLabel } from "react-dymo-hooks";
+import {printLabel} from "react-dymo-hooks";
 
 async function handlePrintSingleLabel(printerName: string, labelXml: string) {
   try {
@@ -219,17 +218,17 @@ async function handlePrintSingleLabel(printerName: string, labelXml: string) {
   }
 }
 
-<button onClick={() => handlePrintLabel(printer, xml)}>Print</button>
+<button onClick={() => handlePrintLabel(printer, xml)}>Print</button>;
 ```
 
 ### Preview a Label
 
 ```tsx
-import { useDymoOpenLabel, useDymoCheckService } from "react-dymo-hooks";
+import {useDymoOpenLabel, useDymoCheckService} from "react-dymo-hooks";
 
-const DymoLabelPreview = ({ xmlFile }: { xmlFile: string }) => {
+const DymoLabelPreview = ({xmlFile}: {xmlFile: string}) => {
   const statusDymoService = useDymoCheckService();
-  const { label, statusOpenLabel, error } = useDymoOpenLabel(statusDymoService, xmlFile);
+  const {label, statusOpenLabel, error} = useDymoOpenLabel(statusDymoService, xmlFile);
 
   if (statusOpenLabel === "loading") return <p>Loading preview...</p>;
   if (statusOpenLabel === "error") return <p>Error: {error?.message}</p>;
@@ -243,11 +242,11 @@ const DymoLabelPreview = ({ xmlFile }: { xmlFile: string }) => {
 ### List Available Printers
 
 ```tsx
-import { useDymoCheckService, useDymoFetchPrinters, DymoPrinter } from "react-dymo-hooks";
+import {useDymoCheckService, useDymoFetchPrinters, DymoPrinter} from "react-dymo-hooks";
 
 const PrinterList = () => {
   const status = useDymoCheckService();
-  const { printers, statusFetchPrinters } = useDymoFetchPrinters(status);
+  const {printers, statusFetchPrinters} = useDymoFetchPrinters(status);
 
   if (statusFetchPrinters === "loading") return <p>Loading printers...</p>;
   if (statusFetchPrinters === "error") return <p>Failed to load printers</p>;

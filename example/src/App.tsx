@@ -18,7 +18,6 @@ interface DymoLabelPreviewProps {
 
 const DymoLabelPreview = memo(({xml, statusDymoService, loadingComponent, errorComponent}: DymoLabelPreviewProps) => {
   const {label, statusOpenLabel} = useDymoOpenLabel(statusDymoService, xml);
-  console.log(label);
   const style = {background: "hsla(0, 0%, 50%, 0.66)", padding: 7};
   const base64Label =
     typeof label === "string" ? label.replace(/^"|"$/g, "").replace(/^data:image\/png;base64,/, "") : "";

@@ -129,6 +129,12 @@ export function useDymoFetchPrinters(
             setData({ statusFetchPrinters: "error", printers: [], error: error });
           }
         });
+    } else {
+      if (abortController.current) {
+        abortController.current.abort();
+        abortController.current = null;
+      }
+      setData({ statusFetchPrinters: "initial", printers: [], error: null });
     }
 
     return () => {
@@ -188,6 +194,12 @@ export function useDymoOpenLabel(
             setData({ statusOpenLabel: "error", label: null, error: error });
           }
         });
+    } else {
+      if (abortController.current) {
+        abortController.current.abort();
+        abortController.current = null;
+      }
+      setData({ statusOpenLabel: "initial", label: null, error: null });
     }
 
     return () => {

@@ -9,8 +9,6 @@ Complete rewrite to TypeScript with comprehensive test suite and API improvement
 ## Breaking Changes
 
 - **DymoPrinter interface**: Boolean properties (`isLocal`, `isTwinTurbo`, `isConnected`) are now actual booleans instead of string `"True"`/`"False"` values
-- **TypeScript types**: Now includes full TypeScript type definitions for better IDE support and type safety
-- **Removed moment.js**: Storage utilities now use native JavaScript Date API (no breaking changes to external API)
 
 ## New Features
 
@@ -38,7 +36,7 @@ For JavaScript users: The library remains fully backward compatible. Boolean com
 ## Technical Changes
 
 - Converted all source files to TypeScript (.ts/.tsx)
-- Added jest test suite with @testing-library/react-hooks
+- Added Vitest test suite with @testing-library/react-hooks
 - Replaced moment.js with native Date API in storage utilities
 - Created type declarations for react-xml-parser
 - Fixed type safety issues in dymo_utils request builder

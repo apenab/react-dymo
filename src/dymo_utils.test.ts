@@ -159,7 +159,7 @@ describe("dymo_utils", () => {
 
       expect(body).toContain(encodeURIComponent(printerName));
       expect(body).toContain(encodeURIComponent(labelXml));
-      expect(body).toContain(labelSetXml);
+      expect(body).toContain(encodeURIComponent(labelSetXml));
     });
 
     it("should handle optional labelSetXml parameter", async () => {

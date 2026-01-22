@@ -16,7 +16,7 @@ function store<T>(
   data: T,
   timeout: number | null = null
 ): void {
-  const expiration = timeout ? Date.now() + timeout * 1000 : null;
+  const expiration = timeout !== null ? Date.now() + timeout * 1000 : null;
   storage.setItem(key, JSON.stringify({ data, expiration }));
 }
 
@@ -46,7 +46,7 @@ function retrieve<T>(
       return defaultValue;
     }
 
-    return item.data || defaultValue;
+    return item.data ?? defaultValue;
   } catch (err) {
     return defaultValue;
   }
