@@ -50,6 +50,16 @@ import {
   printLabel,
 } from "@dymo-print-suite/react";
 
+const labelXml = `<?xml version="1.0" encoding="utf-8"?>
+<DieCutLabel Version="8.0" Units="twips">
+  <PaperOrientation>Landscape</PaperOrientation>
+  <ObjectInfo Name="Text">
+    <TextObject>
+      <StyledText><String>Hello World</String></StyledText>
+    </TextObject>
+  </ObjectInfo>
+</DieCutLabel>`;
+
 function App() {
   const status = useDymoCheckService();
   const { printers, statusFetchPrinters } = useDymoFetchPrinters(status);

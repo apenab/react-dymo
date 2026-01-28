@@ -107,6 +107,73 @@ interface OpenLabelResult {
 }
 ```
 
+### `useData<T>(initialData)`
+
+Low-level utility hook for managing state with partial updates. Similar to `this.setState()` in class components, it merges updates into existing state rather than replacing it.
+
+This hook is used internally by `useDymoFetchPrinters` and `useDymoOpenLabel`. You typically don't need this hook directly unless you're building custom hooks or need class-style state merging.
+
+```tsx
+import { useData } from "@dymo-print-suite/react";
+
+interface FormState {
+  name: string;
+  email: string;
+  loading: boolean;
+}
+
+function MyComponent() {
+  const [state, setState] = useData<FormState>({
+    name: "",
+    email: "",
+    loading: false,
+  });
+
+  const handleSubmit = async () => {
+    // Partial update - only changes 'loading', preserves 'name' and 'email'
+    setState({ loading: true });
+
+    await submitForm(state.name, state.email);
+
+    setState({ loading: false });
+  };
+
+  return (
+    <form>
+      <input
+        value={state.name}
+        onChange={(e) => setState({ name: e.target.value })}
+      />
+      <input
+        value={state.email}
+        onChange={(e) => setState({ email: e.target.value })}
+      />
+      <button disabled={state.loading} onClick={handleSubmit}>
+        Submit
+      </button>
+    </form>
+  );
+}
+```
+
+**Parameters:**
+
+- `initialData` - Initial state object
+
+**Returns:** `[T, Dispatch<Partial<T>>]` - A tuple of current state and a setter that accepts partial updates
+
+**When to use:**
+
+- Building custom async hooks that need to track multiple related values (status, data, error)
+- Managing form state where you want to update individual fields without spreading
+- Migrating class components that rely on `this.setState()` merge behavior
+
+**When to prefer higher-level hooks:**
+
+- For checking DYMO service status → use `useDymoCheckService()`
+- For fetching printers → use `useDymoFetchPrinters()`
+- For rendering label previews → use `useDymoOpenLabel()`
+
 ## Printing Labels
 
 Use the `printLabel` function (re-exported from `@dymo-print-suite/core`):

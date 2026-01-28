@@ -17,17 +17,23 @@ yarn add @dymo-print-suite/core
 
 ## Usage
 
+> **Note:** Examples use async/await syntax. For CommonJS or environments without top-level await, wrap calls in an async function.
+
 ### Print a Label
 
 ```typescript
 import { printLabel } from "@dymo-print-suite/core";
 
-const labelXml = `<?xml version="1.0" encoding="utf-8"?>
+async function print() {
+  const labelXml = `<?xml version="1.0" encoding="utf-8"?>
 <DieCutLabel Version="8.0" Units="twips">
   <!-- Your label XML -->
 </DieCutLabel>`;
 
-await printLabel("DYMO LabelWriter 450", labelXml);
+  await printLabel("DYMO LabelWriter 450", labelXml);
+}
+
+print();
 ```
 
 ### Build Custom Requests
@@ -35,12 +41,16 @@ await printLabel("DYMO LabelWriter 450", labelXml);
 ```typescript
 import { dymoRequestBuilder } from "@dymo-print-suite/core";
 
-const response = await dymoRequestBuilder({
-  method: "GET",
-  wsAction: "getPrinters",
-});
+async function fetchPrinters() {
+  const response = await dymoRequestBuilder({
+    method: "GET",
+    wsAction: "getPrinters",
+  });
 
-console.log(response.data);
+  console.log(response.data);
+}
+
+fetchPrinters();
 ```
 
 ### Parse Printer List from XML
@@ -60,22 +70,27 @@ printers.forEach((printer) => {
 ```typescript
 import { dymoRequestBuilder, isRequestCancelled } from "@dymo-print-suite/core";
 
-const controller = new AbortController();
+async function fetchWithCancellation() {
+  const controller = new AbortController();
 
-try {
-  const response = await dymoRequestBuilder({
-    method: "GET",
-    wsAction: "status",
-    signal: controller.signal,
-  });
-} catch (error) {
-  if (isRequestCancelled(error)) {
-    console.log("Request was cancelled");
+  // Cancel after 5 seconds
+  setTimeout(() => controller.abort(), 5000);
+
+  try {
+    const response = await dymoRequestBuilder({
+      method: "GET",
+      wsAction: "status",
+      signal: controller.signal,
+    });
+    console.log(response.data);
+  } catch (error) {
+    if (isRequestCancelled(error)) {
+      console.log("Request was cancelled");
+    }
   }
 }
 
-// Cancel the request
-controller.abort();
+fetchWithCancellation();
 ```
 
 ## API

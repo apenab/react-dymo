@@ -62,7 +62,7 @@
   if (axios.isCancel(error)) { ... }
 
   // After
-  import { isRequestCancelled } from "dymo-print-suite";
+  import { isRequestCancelled } from "@dymo-print-suite/core";
   if (isRequestCancelled(error)) { ... }
   ```
 

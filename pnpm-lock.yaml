@@ -57,7 +57,7 @@ importers:
         specifier: ^4.5.4
         version: 4.5.4(@types/node@25.0.10)(rollup@4.56.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.0.10))
       vitest:
-        specifier: ^4.0.17
+        specifier: ^4.0.18
         version: 4.0.18(@types/node@25.0.10)(@vitest/ui@4.0.18)(jsdom@27.4.0)
 
   example:

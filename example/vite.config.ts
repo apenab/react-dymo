@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, searchForWorkspaceRoot } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 
@@ -7,6 +7,12 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
+    fs: {
+      allow: [
+        searchForWorkspaceRoot(process.cwd()),
+        resolve(__dirname, '../packages'),
+      ],
+    },
   },
   resolve: {
     alias: {
