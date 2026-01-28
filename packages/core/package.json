@@ -2,6 +2,25 @@
   "name": "@dymo-print-suite/core",
   "version": "0.0.0",
   "description": "Core TypeScript library for DYMO Label Web Service",
+  "keywords": [
+    "dymo",
+    "label",
+    "printer",
+    "labelwriter",
+    "web-service",
+    "typescript"
+  ],
+  "homepage": "https://github.com/apenab/dymo-print-suite/tree/master/packages/core#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apenab/dymo-print-suite.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/apenab/dymo-print-suite/issues"
+  },
+  "license": "MIT",
+  "author": "apenab",
   "type": "module",
   "main": "./dist/index.cjs.js",
   "module": "./dist/index.modern.js",

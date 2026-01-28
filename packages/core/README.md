@@ -3,6 +3,8 @@
 Core TypeScript library for interacting with DYMO Label Web Service.
 Use this package when you want the DYMO helpers without React.
 
+> **Using React?** Check out [@dymo-print-suite/react](https://www.npmjs.com/package/@dymo-print-suite/react) for ready-to-use hooks.
+
 ## Installation
 
 ```bash
@@ -145,6 +147,16 @@ type WsAction =
   | "loadImage"
   | "getJobStatus";
 ```
+
+## Requirements
+
+- [DYMO Label Web Service](https://www.dymo.com/support?cfid=online-support-sdk) must be installed and running
+- Supported browsers: Chrome, Firefox, Edge, Safari
+
+## Related
+
+- [@dymo-print-suite/react](https://www.npmjs.com/package/@dymo-print-suite/react) - React hooks for DYMO printing
+- [GitHub Repository](https://github.com/apenab/dymo-print-suite)
 
 ## License
 

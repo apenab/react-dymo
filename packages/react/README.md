@@ -258,6 +258,17 @@ If you're migrating from `react-dymo-hooks`, update your imports:
 
 The API is fully compatible.
 
+## Requirements
+
+- [DYMO Label Web Service](https://www.dymo.com/support?cfid=online-support-sdk) must be installed and running
+- React 16.8+ (hooks support)
+- Supported browsers: Chrome, Firefox, Edge, Safari
+
+## Related
+
+- [@dymo-print-suite/core](https://www.npmjs.com/package/@dymo-print-suite/core) - Core library (no React dependency)
+- [GitHub Repository](https://github.com/apenab/dymo-print-suite)
+
 ## License
 
 MIT
