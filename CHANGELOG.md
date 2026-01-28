@@ -1,4 +1,4 @@
-# react-dymo-hooks
+# dymo-print-suite
 
 ## 4.0.0
 
@@ -62,7 +62,7 @@
   if (axios.isCancel(error)) { ... }
 
   // After
-  import { isRequestCancelled } from "react-dymo-hooks";
+  import { isRequestCancelled } from "@dymo-print-suite/core";
   if (isRequestCancelled(error)) { ... }
   ```
 

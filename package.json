@@ -1,74 +1,43 @@
 {
-  "name": "react-dymo-hooks",
+  "name": "dymo-print-suite",
   "version": "4.0.0",
-  "description": "Collections of react hooks to handle the Dymo LabelWriter web service.",
+  "private": true,
+  "description": "Monorepo for DYMO Label printing libraries",
   "author": "apenab",
   "license": "MIT",
-  "repository": "apenab/react-dymo",
-  "main": "dist/index.cjs.js",
-  "module": "dist/index.modern.js",
-  "source": "src/index.ts",
-  "types": "dist/index.d.ts",
+  "repository": "apenab/dymo-print-suite",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "build": "vite build",
-    "start": "vite build --watch",
-    "prepare": "run-s build",
-    "test": "run-s test:unit test:lint test:build",
-    "test:build": "run-s build",
-    "test:lint": "eslint .",
-    "test:unit": "vitest run",
+    "build": "pnpm -r build",
+    "test": "vitest run",
     "test:watch": "vitest",
-    "example": "cd example && npm start",
-    "predeploy": "cd example && npm install && npm run build",
+    "test:lint": "eslint .",
+    "example": "pnpm --filter dymo-print-suite-example dev",
+    "predeploy": "pnpm --filter dymo-print-suite-example build",
     "deploy": "gh-pages -d example/dist",
     "changeset": "changeset",
     "version": "changeset version",
-    "release": "changeset publish"
-  },
-  "peerDependencies": {
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0"
+    "release": "pnpm -r build && changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.8",
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^14.3.1",
-    "@types/node": "^25.0.9",
-    "@types/react-dom": "^18.3.5",
-    "@types/react": "^18.3.18",
     "@vitest/coverage-v8": "^4.0.17",
     "@vitest/ui": "^4.0.17",
-    "ajv": "^8.17.1",
-    "babel-eslint": "^10.0.3",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.7.0",
     "eslint-config-standard": "^14.1.0",
-    "eslint-config-standard-react": "^9.2.0",
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-prettier": "^3.1.1",
     "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-react": "^7.17.0",
-    "eslint-plugin-react-hooks": "^4.0.4",
     "eslint-plugin-standard": "^4.0.1",
     "gh-pages": "^2.2.0",
-    "jsdom": "^27.4.0",
-    "npm-run-all": "^4.1.5",
     "prettier": "^2.0.4",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vite-plugin-dts": "^4.5.4",
-    "vitest": "^4.0.17"
-  },
-  "files": [
-    "dist"
-  ],
-  "dependencies": {
-    "react-xml-parser": "^1.1.6"
+    "vitest": "^4.0.18"
   }
 }

@@ -1,15 +1,16 @@
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { useDymoCheckService, useDymoFetchPrinters, useDymoOpenLabel } from "./index";
-import * as dymoUtils from "./dymo_utils";
-import * as storage from "./storage";
+import { useDymoCheckService, useDymoFetchPrinters, useDymoOpenLabel } from "../src/hooks";
+import * as core from "@dymo-print-suite/core";
 import { vi, beforeEach, afterEach, describe, it, expect } from "vitest";
 
-// Mock the dymo_utils module
-vi.mock("./dymo_utils", async () => {
-  const actual = await vi.importActual("./dymo_utils");
+// Mock the core module
+vi.mock("@dymo-print-suite/core", async () => {
+  const actual = await vi.importActual("@dymo-print-suite/core");
   return {
     ...actual,
     dymoRequestBuilder: vi.fn(),
+    localRetrieve: vi.fn(),
+    localStore: vi.fn(),
   };
 });
 
@@ -17,11 +18,11 @@ describe("React Hooks", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
-    vi.spyOn(storage, "localRetrieve").mockReturnValue({
+    vi.mocked(core.localRetrieve).mockReturnValue({
       activeHost: "127.0.0.1",
       activePort: "41951",
     });
-    vi.spyOn(storage, "localStore").mockImplementation(() => {});
+    vi.mocked(core.localStore).mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -30,7 +31,7 @@ describe("React Hooks", () => {
 
   describe("useDymoCheckService", () => {
     it("should return 'loading' initially then 'success' on successful connection", async () => {
-      vi.mocked(dymoUtils.dymoRequestBuilder).mockResolvedValue({
+      vi.mocked(core.dymoRequestBuilder).mockResolvedValue({
         data: "connected",
         status: 200,
         statusText: "OK",
@@ -45,7 +46,7 @@ describe("React Hooks", () => {
     });
 
     it("should return 'error' on connection failure", async () => {
-      vi.mocked(dymoUtils.dymoRequestBuilder).mockRejectedValue(new Error("Connection failed"));
+      vi.mocked(core.dymoRequestBuilder).mockRejectedValue(new Error("Connection failed"));
 
       const { result } = renderHook(() => useDymoCheckService());
 
@@ -55,8 +56,8 @@ describe("React Hooks", () => {
     });
 
     it("should handle cancellation without setting error state", async () => {
-      vi.mocked(dymoUtils.dymoRequestBuilder).mockRejectedValue(
-        new dymoUtils.RequestCancelledError("Request cancelled")
+      vi.mocked(core.dymoRequestBuilder).mockRejectedValue(
+        new core.RequestCancelledError("Request cancelled")
       );
 
       const { result } = renderHook(() => useDymoCheckService());
@@ -77,7 +78,7 @@ describe("React Hooks", () => {
       const { result } = renderHook(() => useDymoFetchPrinters("initial"));
 
       expect(result.current.statusFetchPrinters).toBe("initial");
-      expect(dymoUtils.dymoRequestBuilder).not.toHaveBeenCalled();
+      expect(core.dymoRequestBuilder).not.toHaveBeenCalled();
     });
 
     it("should fetch printers when statusDymoService is 'success'", async () => {
@@ -93,7 +94,7 @@ describe("React Hooks", () => {
         </Printers>
       `;
 
-      vi.mocked(dymoUtils.dymoRequestBuilder).mockResolvedValue({
+      vi.mocked(core.dymoRequestBuilder).mockResolvedValue({
         data: xmlResponse,
         status: 200,
         statusText: "OK",
@@ -116,7 +117,7 @@ describe("React Hooks", () => {
     });
 
     it("should handle fetch error", async () => {
-      vi.mocked(dymoUtils.dymoRequestBuilder).mockRejectedValue(
+      vi.mocked(core.dymoRequestBuilder).mockRejectedValue(
         new Error("Failed to fetch printers")
       );
 
@@ -139,7 +140,7 @@ describe("React Hooks", () => {
         </Printers>
       `;
 
-      vi.mocked(dymoUtils.dymoRequestBuilder).mockResolvedValue({
+      vi.mocked(core.dymoRequestBuilder).mockResolvedValue({
         data: xmlResponse,
         status: 200,
         statusText: "OK",
@@ -162,13 +163,13 @@ describe("React Hooks", () => {
       const { result } = renderHook(() => useDymoOpenLabel("initial", "<Label></Label>"));
 
       expect(result.current.statusOpenLabel).toBe("initial");
-      expect(dymoUtils.dymoRequestBuilder).not.toHaveBeenCalled();
+      expect(core.dymoRequestBuilder).not.toHaveBeenCalled();
     });
 
     it("should render label when statusDymoService is 'success'", async () => {
       const base64Image = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ";
 
-      vi.mocked(dymoUtils.dymoRequestBuilder).mockResolvedValue({
+      vi.mocked(core.dymoRequestBuilder).mockResolvedValue({
         data: base64Image,
         status: 200,
         statusText: "OK",
@@ -186,7 +187,7 @@ describe("React Hooks", () => {
     });
 
     it("should handle render error", async () => {
-      vi.mocked(dymoUtils.dymoRequestBuilder).mockRejectedValue(
+      vi.mocked(core.dymoRequestBuilder).mockRejectedValue(
         new Error("Failed to render label")
       );
 
@@ -199,7 +200,7 @@ describe("React Hooks", () => {
     });
 
     it("should URL encode label XML in request", async () => {
-      vi.mocked(dymoUtils.dymoRequestBuilder).mockResolvedValue({
+      vi.mocked(core.dymoRequestBuilder).mockResolvedValue({
         data: "base64data",
         status: 200,
         statusText: "OK",
@@ -211,7 +212,7 @@ describe("React Hooks", () => {
       renderHook(() => useDymoOpenLabel("success", labelXML));
 
       await waitFor(() =>
-        expect(dymoUtils.dymoRequestBuilder).toHaveBeenCalledWith(
+        expect(core.dymoRequestBuilder).toHaveBeenCalledWith(
           expect.objectContaining({
             method: "POST",
             wsAction: "renderLabel",

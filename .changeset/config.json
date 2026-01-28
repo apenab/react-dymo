@@ -3,7 +3,7 @@
   "changelog": "@changesets/cli/changelog",
   "commit": false,
   "fixed": [],
-  "linked": [],
+  "linked": [["@dymo-print-suite/core", "@dymo-print-suite/react"]],
   "access": "public",
   "baseBranch": "master",
   "updateInternalDependencies": "patch",

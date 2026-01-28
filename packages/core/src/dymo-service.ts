@@ -1,4 +1,4 @@
-import XMLParser from "react-xml-parser";
+import { XMLParser } from "fast-xml-parser";
 
 import {
   WS_PROTOCOL,
@@ -226,23 +226,40 @@ export function dymoUrlBuilder(
  * @returns Array of printer objects with boolean properties
  */
 export function getDymoPrintersFromXml(xml: string, modelPrinter: string): DymoPrinter[] {
-  const xmlParse = new XMLParser().parseFromString(xml);
-  const labelWritersPrinters = xmlParse.getElementsByTagName(modelPrinter);
+  const parser = new XMLParser({
+    ignoreAttributes: true,
+    isArray: (name) => name === modelPrinter,
+  });
+
+  const parsed = parser.parse(xml);
   const printers: DymoPrinter[] = [];
 
-  labelWritersPrinters.map((printer) => {
+  // Navigate to the printer array - structure is typically Printers > LabelWriterPrinter[]
+  const printersRoot = parsed?.Printers;
+  if (!printersRoot) {
+    return printers;
+  }
+
+  const printerList = printersRoot[modelPrinter];
+  if (!printerList || !Array.isArray(printerList)) {
+    return printers;
+  }
+
+  for (const printer of printerList) {
     const printerDetails: Record<string, any> = {};
-    printer.children.map((item) => {
-      const key = item.name.charAt(0).toLowerCase() + item.name.slice(1);
+
+    for (const [key, value] of Object.entries(printer)) {
+      const camelKey = key.charAt(0).toLowerCase() + key.slice(1);
       // Convert "True"/"False" strings to actual booleans
-      if (item.value === "True" || item.value === "False") {
-        printerDetails[key] = item.value === "True";
+      if (value === "True" || value === "False") {
+        printerDetails[camelKey] = value === "True";
       } else {
-        printerDetails[key] = item.value;
+        printerDetails[camelKey] = value;
       }
-    });
+    }
+
     printers.push(printerDetails as DymoPrinter);
-  });
+  }
 
   return printers;
 }
@@ -259,7 +276,7 @@ export function printLabel(
   labelXml: string,
   labelSetXml?: string
 ): Promise<DymoResponse<any>> {
- const encodedLabelSetXml = labelSetXml ? encodeURIComponent(labelSetXml) : "";
+  const encodedLabelSetXml = labelSetXml ? encodeURIComponent(labelSetXml) : "";
   const body = `printerName=${encodeURIComponent(printerName)}&printParamsXml=&labelXml=${encodeURIComponent(
     labelXml
   )}&labelSetXml=${encodedLabelSetXml}`;

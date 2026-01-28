@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import { localStore, localRetrieve } from "./storage";
+import { localStore, localRetrieve } from "../src/storage";
 
 describe("storage", () => {
   beforeEach(() => {

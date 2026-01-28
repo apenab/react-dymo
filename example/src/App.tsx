@@ -5,7 +5,7 @@ import {
   useDymoOpenLabel,
   printLabel,
   ServiceStatus,
-} from "react-dymo-hooks";
+} from "@dymo-print-suite/react";
 
 import {generateXmlExample} from "./utils";
 
