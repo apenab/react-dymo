@@ -1,6 +1,6 @@
 {
   "name": "@dymo-print-suite/react",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "React hooks for DYMO Label printing",
   "keywords": [
     "dymo",
@@ -33,7 +33,9 @@
       "require": "./dist/index.cjs.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "vite build",
     "test": "vitest run",
