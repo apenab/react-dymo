@@ -1,6 +1,6 @@
 {
   "name": "@dymo-print-suite/core",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "Core TypeScript library for DYMO Label Web Service",
   "type": "module",
   "main": "./dist/index.cjs.js",
