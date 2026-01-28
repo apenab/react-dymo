@@ -10,7 +10,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      'react-dymo-hooks': resolve(__dirname, '../src/index.ts'),
+      '@dymo-print-suite/react': resolve(__dirname, '../packages/react/src/index.ts'),
+      '@dymo-print-suite/core': resolve(__dirname, '../packages/core/src/index.ts'),
     },
   },
 })

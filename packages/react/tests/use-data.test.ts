@@ -1,5 +1,5 @@
 import { renderHook, act } from "@testing-library/react";
-import { useData } from "./hooks";
+import { useData } from "../src/hooks/use-data";
 
 describe("useData", () => {
   it("should initialize with provided data", () => {

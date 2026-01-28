@@ -1,286 +1,140 @@
-# react-dymo
+# dymo-print-suite
 
-> TypeScript-ready React hooks and utilities for the Dymo LabelWriter web service.
+[![npm version](https://img.shields.io/npm/v/@dymo-print-suite/react.svg)](https://www.npmjs.com/package/@dymo-print-suite/react)
+[![npm version](https://img.shields.io/npm/v/@dymo-print-suite/core.svg)](https://www.npmjs.com/package/@dymo-print-suite/core)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-[![NPM](https://img.shields.io/npm/v/react-dymo-hooks.svg)](https://www.npmjs.com/package/react-dymo-hooks) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+TypeScript-first toolkit to interact with DYMO LabelWriter printers via the DYMO Web Service.
 
-## v4.0.0 - Major Rewrite
+## Features
 
-This major release brings full TypeScript support, modern build tooling, and zero external HTTP dependencies.
+- **Typed helpers** - XML request/response handling with full TypeScript support
+- **React hooks** - Easy integration with React applications
+- **Abortable requests** - Cancel pending requests with AbortController
+- **Printer discovery** - Enumerate available DYMO printers
+- **Label preview** - Render labels as PNG images before printing
 
-### Breaking Changes
+## Packages
 
-- **DymoPrinter interface**: Boolean properties (`isLocal`, `isTwinTurbo`, `isConnected`) are now actual booleans instead of string `"True"`/`"False"` values
-- **Removed axios**: HTTP requests now use native Fetch API
-  - Replace `cancelToken` with `signal` (AbortController)
-  - Replace `axios.isCancel()` with `isRequestCancelled()`
-  - Replace `axiosOtherParams` with `fetchOptions`
-- **Response type**: `dymoRequestBuilder` returns `DymoResponse` instead of `AxiosResponse`
+| Package | Description | Docs |
+|---------|-------------|------|
+| [@dymo-print-suite/core](https://www.npmjs.com/package/@dymo-print-suite/core) | TypeScript utilities (no React dependency) | [README](./packages/core/README.md) |
+| [@dymo-print-suite/react](https://www.npmjs.com/package/@dymo-print-suite/react) | React hooks + re-exports from core | [README](./packages/react/README.md) |
 
-### New Features
+## Installation
 
-- Full TypeScript support with exported types and interfaces
-- Native Fetch API (~40KB smaller bundle, no axios dependency)
-- AbortController for request cancellation (Web standard)
-- Vite + Vitest for faster builds and tests
-- Comprehensive test suite with 90%+ coverage
-- Better IDE autocomplete and type checking
-
-### Migration Guide
-
-#### Boolean Properties
-
-```typescript
-// Before (v2.x)
-if (printer.isLocal === "True") { ... }
-
-// After (v4.x)
-if (printer.isLocal === true) { ... }
-// or simply: if (printer.isLocal) { ... }
-```
-
-#### Request Cancellation
-
-```typescript
-// Before (v2.x with axios)
-import axios from "axios";
-const source = axios.CancelToken.source();
-dymoRequestBuilder({ cancelToken: source.token, ... });
-if (axios.isCancel(error)) { ... }
-
-// After (v4.x with fetch)
-import { isRequestCancelled } from "react-dymo-hooks";
-const controller = new AbortController();
-dymoRequestBuilder({ signal: controller.signal, ... });
-if (isRequestCancelled(error)) { ... }
-```
-
-## Install
+**For React projects:**
 
 ```bash
-npm install --save react-dymo-hooks
+npm install @dymo-print-suite/react
+# or
+pnpm add @dymo-print-suite/react
 ```
 
-or
+**For non-React projects:**
 
 ```bash
-yarn add react-dymo-hooks
+npm install @dymo-print-suite/core
+# or
+pnpm add @dymo-print-suite/core
 ```
 
-## API
+## Quick Start
 
-### `printLabel()`
+### React
 
-Print Dymo labels.
-
-#### Arguments
-
-- `printerName` {string} - The Dymo Printer to print on
-- `labelXml` {string} - Label XML parsed to string
-- `labelSetXml` {string} - Optional. LabelSet to print multiple labels with same layout but different data
-
-#### Returns
-
-- `Promise<DymoResponse>` - Response from the DYMO service
-
-### `useDymoCheckService()`
-
-Return the status of DYMO Label Web Service.
-
-#### Arguments
-
-- `port` {number} - Optional. The port of running DYMO Label Web Service (default: 41951)
-
-#### Returns
-
-- `status` - `"initial" | "loading" | "success" | "error"` Status of DYMO Label Web Service
-
-### `useDymoFetchPrinters()`
-
-Returns the available DYMO Labelwriter Printers.
-
-#### Arguments
-
-- `statusDymoService` {ServiceStatus} - The status from `useDymoCheckService()`
-- `modelPrinter` {string} - Optional. The model of label writer printer (default: "LabelWriterPrinter")
-- `port` {number} - Optional. The port of running DYMO Label Web Service (default: 41951)
-
-#### Returns
-
-Object containing:
-
-- `statusFetchPrinters` - `"initial" | "loading" | "success" | "error"`
-- `printers` - Array of `DymoPrinter` objects
-- `error` - Error object if request failed
-
-### `useDymoOpenLabel()`
-
-Render a label preview.
-
-#### Arguments
-
-- `statusDymoService` {ServiceStatus} - The status from `useDymoCheckService()`
-- `labelXML` {string} - Label XML content
-- `port` {number} - Optional. The port of running DYMO Label Web Service (default: 41951)
-
-#### Returns
-
-Object containing:
-
-- `statusOpenLabel` - `"initial" | "loading" | "success" | "error"`
-- `label` - Base64 encoded PNG
-- `error` - Error object if request failed
-
-### `isRequestCancelled()`
-
-Check if an error is a cancellation error.
-
-#### Arguments
-
-- `error` {any} - The error to check
-
-#### Returns
-
-- `boolean` - `true` if the error is a cancellation
-
-## Run Example
-
-From the root directory:
-
-```bash
-npm run example
-```
-
-Or manually:
-
-```bash
-cd example
-npm install
-npm start
-```
-
-The example app uses Vite + React 18 + TypeScript.
-
-## TypeScript Support
-
-The library is written in TypeScript and exports all necessary types:
-
-```typescript
+```tsx
 import {
-  // Hooks
   useDymoCheckService,
   useDymoFetchPrinters,
-  useDymoOpenLabel,
-
-  // Functions
   printLabel,
-  dymoRequestBuilder,
-  dymoUrlBuilder,
-  getDymoPrintersFromXml,
-  isRequestCancelled,
+} from "@dymo-print-suite/react";
 
-  // Types
-  DymoPrinter,
-  DymoResponse,
-  DymoRequestConfig,
-  DymoRequestParams,
-  ServiceStatus,
-  FetchPrintersResult,
-  OpenLabelResult,
-
-  // Error class
-  RequestCancelledError,
-} from "react-dymo-hooks";
-
-// All hooks and utilities are fully typed
-const statusDymoService: ServiceStatus = useDymoCheckService();
-const {printers, statusFetchPrinters, error}: FetchPrintersResult = useDymoFetchPrinters(statusDymoService);
-
-// DymoPrinter interface with proper boolean types
-printers.forEach((printer: DymoPrinter) => {
-  console.log(`${printer.name}: ${printer.isConnected ? "Online" : "Offline"}`);
-});
-```
-
-## Examples
-
-### Print a Dymo Label
-
-```tsx
-import {printLabel} from "react-dymo-hooks";
-
-async function handlePrintSingleLabel(printerName: string, labelXml: string) {
-  try {
-    const response = await printLabel(printerName, labelXml);
-    console.info(response);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-<button onClick={() => handlePrintLabel(printer, xml)}>Print</button>;
-```
-
-### Preview a Label
-
-```tsx
-import {useDymoOpenLabel, useDymoCheckService} from "react-dymo-hooks";
-
-const DymoLabelPreview = ({xmlFile}: {xmlFile: string}) => {
-  const statusDymoService = useDymoCheckService();
-  const {label, statusOpenLabel, error} = useDymoOpenLabel(statusDymoService, xmlFile);
-
-  if (statusOpenLabel === "loading") return <p>Loading preview...</p>;
-  if (statusOpenLabel === "error") return <p>Error: {error?.message}</p>;
-  if (statusOpenLabel === "success" && label) {
-    return <img src={`data:image/png;base64,${label}`} alt="Label preview" />;
-  }
-  return null;
-};
-```
-
-### List Available Printers
-
-```tsx
-import {useDymoCheckService, useDymoFetchPrinters, DymoPrinter} from "react-dymo-hooks";
-
-const PrinterList = () => {
+function App() {
   const status = useDymoCheckService();
-  const {printers, statusFetchPrinters} = useDymoFetchPrinters(status);
+  const { printers, statusFetchPrinters } = useDymoFetchPrinters(status);
 
-  if (statusFetchPrinters === "loading") return <p>Loading printers...</p>;
-  if (statusFetchPrinters === "error") return <p>Failed to load printers</p>;
+  if (status === "loading") return <p>Checking DYMO service...</p>;
+  if (status === "error") return <p>DYMO service not available</p>;
 
   return (
-    <ul>
-      {printers.map((printer: DymoPrinter) => (
-        <li key={printer.name}>
-          {printer.name} - {printer.isConnected ? "Connected" : "Disconnected"}
-        </li>
-      ))}
-    </ul>
+    <div>
+      <h1>Available Printers</h1>
+      {statusFetchPrinters === "success" && (
+        <ul>
+          {printers.map((p) => (
+            <li key={p.name}>
+              {p.name}
+              <button onClick={() => printLabel(p.name, labelXml)}>
+                Print
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
-};
+}
+```
+
+### Core (non-React)
+
+```typescript
+import { dymoRequestBuilder, printLabel } from "@dymo-print-suite/core";
+
+// Check service status
+const response = await dymoRequestBuilder({
+  method: "GET",
+  wsAction: "status",
+});
+
+// Print a label
+await printLabel("DYMO LabelWriter 450", labelXml);
+```
+
+## Migration from react-dymo-hooks
+
+If you were using `react-dymo-hooks`, update your imports:
+
+```diff
+- import { useDymoCheckService, printLabel } from "react-dymo-hooks";
++ import { useDymoCheckService, printLabel } from "@dymo-print-suite/react";
+```
+
+The API remains compatible. See [MIGRATION.md](./MIGRATION.md) for details.
+
+## Documentation
+
+- **Core API**: [packages/core/README.md](./packages/core/README.md) - Full API reference for TypeScript utilities
+- **React Hooks**: [packages/react/README.md](./packages/react/README.md) - Hook documentation with examples
+
+## Example App
+
+```bash
+pnpm install
+pnpm --filter dymo-print-suite-example dev
 ```
 
 ## Development
 
 ```bash
 # Install dependencies
-npm install
+pnpm install
+
+# Build all packages
+pnpm build
 
 # Run tests
-npm run test:unit
+pnpm test
 
 # Run tests in watch mode
-npm run test:watch
-
-# Build the library
-npm run build
-
-# Run example app
-npm run example
+pnpm test:watch
 ```
+
+## Requirements
+
+- DYMO Label Web Service must be installed and running on the user's machine
+- Supported browsers: Chrome, Firefox, Edge, Safari
 
 ## License
 

@@ -1,12 +1,12 @@
 import { vi } from "vitest";
-import { dymoUrlBuilder, getDymoPrintersFromXml, printLabel, dymoRequestBuilder } from "./dymo_utils";
-import { WS_ACTIONS } from "./constants";
-import * as storage from "./storage";
+import { dymoUrlBuilder, getDymoPrintersFromXml, printLabel, dymoRequestBuilder } from "../src/dymo-service";
+import { WS_ACTIONS } from "../src/constants";
+import * as storage from "../src/storage";
 
 // Mock global fetch
 global.fetch = vi.fn();
 
-describe("dymo_utils", () => {
+describe("dymo-service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
